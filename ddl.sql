@@ -116,3 +116,29 @@ CREATE TABLE cuotas_manejo (
     INDEX idx_estado (estado),
     INDEX idx_vencimiento (fecha_vencimiento)
 );
+
+-- tabla de historial de pagos
+CREATE TABLE historial_pagos (
+    pago_id INT PRIMARY KEY AUTO_INCREMENT,
+    cuota_id INT NOT NULL,
+    numero_transaccion VARCHAR(50) UNIQUE NOT NULL,
+    monto_pagado DECIMAL(8,2) NOT NULL,
+    monto_pendiente DECIMAL(8,2) NOT NULL,
+    fecha_pago DATETIME NOT NULL,
+    metodo_pago ENUM('Transferencia', 'Efectivo', 'Debito_Automatico', 'PSE', 'Tarjeta_Debito', 'Corresponsal') NOT NULL,
+    referencia_pago VARCHAR(100),
+    banco_origen VARCHAR(50),
+    canal_pago ENUM('Sucursal', 'ATM', 'Online', 'App_Movil', 'Call_Center') NOT NULL,
+    usuario_registro VARCHAR(50),
+    ip_origen VARCHAR(45),
+    estado_transaccion ENUM('Exitoso', 'Fallido', 'Pendiente', 'Reversado') DEFAULT 'Exitoso',
+    comision DECIMAL(6,2) DEFAULT 0,
+    observaciones TEXT,
+    fecha_procesamiento DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (cuota_id) REFERENCES cuotas_manejo(cuota_id) ON DELETE CASCADE,
+    INDEX idx_cuota (cuota_id),
+    INDEX idx_fecha_pago (fecha_pago),
+    INDEX idx_metodo_pago (metodo_pago),
+    INDEX idx_estado (estado_transaccion),
+    INDEX idx_numero_transaccion (numero_transaccion)
+);
