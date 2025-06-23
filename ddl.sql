@@ -142,3 +142,21 @@ CREATE TABLE historial_pagos (
     INDEX idx_estado (estado_transaccion),
     INDEX idx_numero_transaccion (numero_transaccion)
 );
+
+-- tabla de audioria de operaciones
+-- IMPORTANTE -> esta tabla tecnicamente no esta relacionada con otras entidades ya que su proposito es meramente logico, eso quiere decir que su objetivo es registrar toda operacion que afecte las demas tablas de nuestra base de datos, para mas informacion, por favor dirigirse al readme que explica el funcionamiento de cada una de las tablas. 
+CREATE TABLE Auditoria_Operaciones (
+    auditoria_id INT PRIMARY KEY AUTO_INCREMENT,
+    tabla_afectada VARCHAR(50) NOT NULL,
+    operacion ENUM('INSERT', 'UPDATE', 'DELETE') NOT NULL,
+    registro_id INT NOT NULL,
+    datos_anteriores JSON,
+    datos_nuevos JSON,
+    usuario VARCHAR(50) NOT NULL,
+    fecha_operacion DATETIME DEFAULT CURRENT_TIMESTAMP,
+    ip_usuario VARCHAR(45),
+    descripcion TEXT,
+    INDEX idx_tabla (tabla_afectada),
+    INDEX idx_fecha (fecha_operacion),
+    INDEX idx_usuario (usuario)
+);
