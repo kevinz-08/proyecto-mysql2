@@ -89,3 +89,30 @@ CREATE TABLE tarjetas (
     INDEX idx_estado (estado),
     INDEX idx_fecha_vencimiento (fecha_vencimiento)
 );
+
+-- tabla de cuotas de manejo
+CREATE TABLE cuotas_manejo (
+    cuota_id INT PRIMARY KEY AUTO_INCREMENT,
+    tarjeta_id INT NOT NULL,
+    periodo_mes INT NOT NULL CHECK (periodo_mes BETWEEN 1 AND 12),
+    periodo_año INT NOT NULL CHECK (periodo_año >= 2020),
+    monto_base DECIMAL(8,2) NOT NULL,
+    porcentaje_descuento DECIMAL(5,2) NOT NULL,
+    valor_descuento DECIMAL(8,2) NOT NULL,
+    monto_final DECIMAL(8,2) NOT NULL,
+    fecha_generacion DATETIME DEFAULT CURRENT_TIMESTAMP,
+    fecha_vencimiento DATE NOT NULL,
+    dias_mora INT DEFAULT 0,
+    interes_mora DECIMAL(8,2) DEFAULT 0,
+    monto_total_con_mora DECIMAL(8,2),
+    estado ENUM('Pendiente', 'Pagada', 'Vencida', 'Condonada') DEFAULT 'Pendiente',
+    metodo_calculo ENUM('Automatico', 'Manual', 'Ajustado') DEFAULT 'Automatico',
+    observaciones TEXT,
+    fecha_actualizacion DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (tarjeta_id) REFERENCES tarjetas(tarjeta_id) ON DELETE CASCADE,
+    UNIQUE KEY unique_cuota_periodo (tarjeta_id, periodo_mes, periodo_año),
+    INDEX idx_tarjeta (tarjeta_id),
+    INDEX idx_periodo (periodo_año, periodo_mes),
+    INDEX idx_estado (estado),
+    INDEX idx_vencimiento (fecha_vencimiento)
+);
