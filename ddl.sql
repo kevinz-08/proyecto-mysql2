@@ -1,4 +1,6 @@
 USE BancoCL;
+-- TABLAS
+-- tabla de clientes
 CREATE TABLE Clientes (
     cliente_id INT PRIMARY KEY AUTO_INCREMENT,
     numero_cuenta VARCHAR(20) UNIQUE NOT NULL,
