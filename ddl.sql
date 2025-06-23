@@ -44,3 +44,19 @@ CREATE TABLE Tipos_Tarjeta (
     estado BOOLEAN DEFAULT TRUE,
     INDEX idx_codigo (codigo_tipo)
 );
+
+-- tabla niveles de descuento
+CREATE TABLE niveles_descuento (
+    descuento_id INT PRIMARY KEY AUTO_INCREMENT,
+    codigo_descuento VARCHAR(10) UNIQUE NOT NULL,
+    nombre_descuento VARCHAR(50) UNIQUE NOT NULL,
+    descripcion TEXT,
+    porcentaje_descuento DECIMAL(5,2) NOT NULL CHECK (porcentaje_descuento >= 0 AND porcentaje_descuento <= 100),
+    monto_minimo_requerido DECIMAL(10,2) NOT NULL,
+    monto_maximo_aplicable DECIMAL(12,2),
+    fecha_inicio DATE NOT NULL,
+    fecha_fin DATE,
+    estado BOOLEAN DEFAULT TRUE,
+    INDEX idx_codigo (codigo_descuento),
+    INDEX idx_monto_minimo (monto_minimo_requerido)
+);
