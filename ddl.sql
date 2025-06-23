@@ -25,3 +25,22 @@ CREATE TABLE Clientes (
     INDEX idx_email (email),
     INDEX idx_estado (estado)
 );
+
+-- tabla tipo tarjeta
+CREATE TABLE Tipos_Tarjeta (
+    tipo_tarjeta_id INT PRIMARY KEY AUTO_INCREMENT,
+    codigo_tipo VARCHAR(10) UNIQUE NOT NULL,
+    nombre_tipo VARCHAR(50) UNIQUE NOT NULL,
+    descripcion TEXT,
+    edad_minima INT DEFAULT 18,
+    edad_maxima INT DEFAULT 99,
+    ingresos_minimos DECIMAL(10,2) DEFAULT 0,
+    monto_minimo_apertura DECIMAL(10,2) NOT NULL,
+    monto_maximo_apertura DECIMAL(12,2),
+    cuota_base_mensual DECIMAL(8,2) NOT NULL,
+    tasa_interes DECIMAL(5,2) DEFAULT 0,
+    beneficios TEXT,
+    fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP,
+    estado BOOLEAN DEFAULT TRUE,
+    INDEX idx_codigo (codigo_tipo)
+);
