@@ -14,3 +14,8 @@ INSERT INTO niveles_descuento (codigo_descuento, nombre_descuento, descripcion, 
 ('DIA', 'Diamante', 'Descuento para clientes con montos altos', 25.00, 800000, 1499999, '2024-01-01'),
 ('VIP', 'VIP', 'Descuento máximo para clientes premium', 35.00, 1500000, 999999999, '2024-01-01'),
 ('ESP', 'Especial', 'Descuento promocional temporal', 20.00, 250000, 999999999, '2024-01-01');
+
+-- 3. Clientes
+INSERT INTO Clientes (numero_cuenta, tipo_documento, numero_documento, nombres, apellidos, fecha_nacimiento, telefono, email, direccion, ciudad, departamento, codigo_postal, ocupacion, ingresos_mensuales, estado) VALUES
+('1100457890', 'CC', '1012345678', 'Juan', 'Pérez', '1995-06-15', '3123456789', 'juan.perez@email.com', 'Calle 123 #45-67', 'Bogotá', 'Cundinamarca', '110111', 'Desarrollador', 3500000, 'Activo'),
+('1100457891', 'CC', '1023456789', 'María', 'Rodríguez', '1988-09-10', '3001234567', 'maria.rodriguez@email.com', 'Carrera 10 #20-30', 'Medellín', 'Antioquia', '050010', 'Diseñadora Gráfica', 2500000, 'Activo');
