@@ -60,3 +60,32 @@ CREATE TABLE niveles_descuento (
     INDEX idx_codigo (codigo_descuento),
     INDEX idx_monto_minimo (monto_minimo_requerido)
 );
+
+-- tabla de tarjetas
+CREATE TABLE tarjetas (
+    tarjeta_id INT PRIMARY KEY AUTO_INCREMENT,
+    numero_tarjeta VARCHAR(19) UNIQUE NOT NULL,
+    cliente_id INT NOT NULL,
+    tipo_tarjeta_id INT NOT NULL,
+    descuento_id INT NOT NULL,
+    monto_apertura DECIMAL(10,2) NOT NULL,
+    limite_credito DECIMAL(12,2),
+    saldo_disponible DECIMAL(12,2),
+    fecha_apertura DATE NOT NULL,
+    fecha_vencimiento DATE NOT NULL,
+    fecha_ultimo_uso DATETIME,
+    pin_encriptado VARCHAR(255),
+    intentos_fallidos INT DEFAULT 0,
+    estado ENUM('Activa', 'Bloqueada', 'Vencida', 'Cancelada', 'Suspendida') DEFAULT 'Activa',
+    motivo_bloqueo TEXT,
+    observaciones TEXT,
+    fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP,
+    fecha_actualizacion DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (cliente_id) REFERENCES Clientes(cliente_id) ON DELETE CASCADE,
+    FOREIGN KEY (tipo_tarjeta_id) REFERENCES Tipos_Tarjeta(tipo_tarjeta_id),
+    FOREIGN KEY (descuento_id) REFERENCES niveles_descuento(descuento_id),
+    INDEX idx_cliente (cliente_id),
+    INDEX idx_tipo (tipo_tarjeta_id),
+    INDEX idx_estado (estado),
+    INDEX idx_fecha_vencimiento (fecha_vencimiento)
+);
