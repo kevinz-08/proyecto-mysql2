@@ -56,3 +56,13 @@ LIMIT 5;
 
 -- ignorar esta parte de codigo
 SELECT cuota_id FROM cuotas_manejo WHERE tarjeta_id IN (1, 2) AND periodo_mes = 6 AND periodo_año = 2024;
+
+-- 11-20 Consultas - CONSULTAS DE TARJETAS Y TIPOS
+
+
+
+-- 21-30 consultas - CONSULTAS DE CUOTAS DE MANEJO
+-- 21a consulta: listar todas las cuotas generadas para el mes de junio de 2024
+SELECT *
+FROM cuotas_manejo
+WHERE MONTH(fecha_generacion) = 6 AND YEAR(fecha_generacion) = 2024;

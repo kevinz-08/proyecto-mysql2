@@ -322,3 +322,17 @@ WHERE cuota_id = 11;
 UPDATE historial_pagos
 SET pago_id = 12
 WHERE cuota_id = 12;
+
+-- modificacion de la fecha de generacion para dar mas variedad
+UPDATE cuotas_manejo SET fecha_generacion = '2024-06-01 08:00:00' WHERE cuota_id = 1;
+UPDATE cuotas_manejo SET fecha_generacion = '2024-06-02 09:15:00' WHERE cuota_id = 2;
+UPDATE cuotas_manejo SET fecha_generacion = '2024-06-03 07:45:00' WHERE cuota_id = 3;
+UPDATE cuotas_manejo SET fecha_generacion = '2024-06-04 10:20:00' WHERE cuota_id = 4;
+UPDATE cuotas_manejo SET fecha_generacion = '2024-06-05 11:10:00' WHERE cuota_id = 5;
+UPDATE cuotas_manejo SET fecha_generacion = '2024-06-06 08:30:00' WHERE cuota_id = 6;
+UPDATE cuotas_manejo SET fecha_generacion = '2024-06-07 12:00:00' WHERE cuota_id = 7;
+UPDATE cuotas_manejo SET fecha_generacion = '2024-06-08 09:50:00' WHERE cuota_id = 8;
+UPDATE cuotas_manejo SET fecha_generacion = '2024-06-09 13:05:00' WHERE cuota_id = 9;
+UPDATE cuotas_manejo SET fecha_generacion = '2024-06-10 10:40:00' WHERE cuota_id = 10;
+UPDATE cuotas_manejo SET fecha_generacion = '2024-06-11 11:25:00' WHERE cuota_id = 11;
+UPDATE cuotas_manejo SET fecha_generacion = '2024-06-12 08:10:00' WHERE cuota_id = 12;
