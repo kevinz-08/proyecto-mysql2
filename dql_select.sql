@@ -54,3 +54,5 @@ FROM Clientes
 ORDER BY ingresos_mensuales DESC
 LIMIT 5;
 
+-- ignorar esta parte de codigo
+SELECT cuota_id FROM cuotas_manejo WHERE tarjeta_id IN (1, 2) AND periodo_mes = 6 AND periodo_año = 2024;

@@ -263,3 +263,62 @@ SET interes_mora = 1200,
     monto_total_con_mora = monto_final + 1200
 WHERE tarjeta_id = 2 AND periodo_mes = 6 AND periodo_año = 2024;
 
+-- modificacion o inserccion de el historial de pagos para dar variedad
+INSERT INTO historial_pagos (cuota_id, numero_transaccion, monto_pagado, monto_pendiente, fecha_pago, metodo_pago, referencia_pago, banco_origen, canal_pago, usuario_registro, ip_origen, estado_transaccion, comision, observaciones) VALUES
+(1, 'TXN0001', 11250, 0, '2024-06-25 10:30:00', 'Transferencia', 'REF-112233', 'Banco CL', 'Online', 'juan.perez', '192.168.1.10', 'Exitoso', 0, 'Pago completo sin inconvenientes');
+
+INSERT INTO historial_pagos (cuota_id, numero_transaccion, monto_pagado, monto_pendiente, fecha_pago, metodo_pago, referencia_pago, banco_origen, canal_pago, usuario_registro, ip_origen, estado_transaccion, comision, observaciones) VALUES
+(2, 'TXN0002', 10000, 2750, '2024-06-26 14:15:00', 'PSE', 'REF-445566', 'Banco CL', 'App_Movil', 'maria.rodriguez', '192.168.1.20', 'Exitoso', 0, 'Pago parcial, pendiente de abono restante');
+
+INSERT INTO historial_pagos (cuota_id, numero_transaccion, monto_pagado, monto_pendiente, fecha_pago, metodo_pago, referencia_pago, banco_origen, canal_pago, usuario_registro, ip_origen, estado_transaccion, comision, observaciones) VALUES
+(3, 'TXN0003', 8000, 0, '2024-06-20 09:30:00', 'Debito_Automatico', 'REF-3001', 'Banco CL', 'App_Movil', 'usuario3', '192.168.0.3', 'Exitoso', 0, 'Pago programado exitosamente'),
+(4, 'TXN0004', 15000, 14800, '2024-07-01 10:15:00', 'Transferencia', 'REF-4002', 'Bancolombia', 'Online', 'usuario4', '192.168.0.4', 'Exitoso', 0, 'Pago parcial tras vencimiento'),
+(5, 'TXN0005', 0, 10800, '2024-06-30 00:00:00', 'PSE', 'REF-5003', 'Davivienda', 'Online', 'usuario5', '192.168.0.5', 'Pendiente', 0, 'Transacción en espera de confirmación'),
+(6, 'TXN0006', 19750, 0, '2024-07-05 18:45:00', 'Efectivo', 'REF-6004', 'Banco CL', 'Sucursal', 'usuario6', '192.168.0.6', 'Exitoso', 0, 'Pago realizado luego de mora'),
+(7, 'TXN0007', 12750, 0, '2024-06-24 11:00:00', 'Debito_Automatico', 'REF-7005', 'Banco CL', 'App_Movil', 'usuario7', '192.168.0.7', 'Exitoso', 0, NULL),
+(8, 'TXN0008', 0, 12000, '2024-06-28 09:15:00', 'Tarjeta_Debito', 'REF-8006', 'Banco CL', 'Online', 'usuario8', '192.168.0.8', 'Fallido', 0, 'Error en la validación del pago'),
+(9, 'TXN0009', 15000, 11250, '2024-06-26 14:40:00', 'PSE', 'REF-9007', 'Banco de Bogotá', 'App_Movil', 'usuario9', '192.168.0.9', 'Exitoso', 0, 'Cliente realizó abono parcial'),
+(10, 'TXN0010', 21250, 0, '2024-06-23 10:00:00', 'Transferencia', 'REF-10008', 'Banco CL', 'Online', 'usuario10', '192.168.0.10', 'Exitoso', 0, NULL),
+(11, 'TXN0011', 14450, 0, '2024-06-24 16:20:00', 'Corresponsal', 'REF-11009', 'Banco AV Villas', 'Sucursal', 'usuario11', '192.168.0.11', 'Exitoso', 450, 'Incluye comisión del corresponsal'),
+(12, 'TXN0012', 25000, 0, '2024-06-25 12:45:00', 'Debito_Automatico', 'REF-12010', 'Banco CL', 'App_Movil', 'usuario12', '192.168.0.12', 'Exitoso', 0, NULL);
+
+-- modificacion de el pago id - correcion
+UPDATE historial_pagos
+SET pago_id = 3
+WHERE cuota_id = 3;
+
+UPDATE historial_pagos
+SET pago_id = 4
+WHERE cuota_id = 4;
+
+UPDATE historial_pagos
+SET pago_id = 5
+WHERE cuota_id = 5;
+
+UPDATE historial_pagos
+SET pago_id = 6
+WHERE cuota_id = 6;
+
+UPDATE historial_pagos
+SET pago_id = 7
+WHERE cuota_id = 7;
+
+UPDATE historial_pagos
+SET pago_id = 8
+WHERE cuota_id = 8;
+
+UPDATE historial_pagos
+SET pago_id = 9
+WHERE cuota_id = 9;
+
+UPDATE historial_pagos
+SET pago_id = 10
+WHERE cuota_id = 10;
+
+UPDATE historial_pagos
+SET pago_id = 11
+WHERE cuota_id = 11;
+
+UPDATE historial_pagos
+SET pago_id = 12
+WHERE cuota_id = 12;
