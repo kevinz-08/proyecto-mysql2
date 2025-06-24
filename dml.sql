@@ -357,3 +357,45 @@ UPDATE cuotas_manejo SET fecha_vencimiento = '2024-06-30' WHERE cuota_id = 9;
 UPDATE cuotas_manejo SET fecha_vencimiento = '2024-07-02' WHERE cuota_id = 10;
 UPDATE cuotas_manejo SET fecha_vencimiento = '2024-07-05' WHERE cuota_id = 11;
 UPDATE cuotas_manejo SET fecha_vencimiento = '2024-07-10' WHERE cuota_id = 12;
+
+
+-- inserccion de los otros 38 clientes
+INSERT INTO Clientes (numero_cuenta, tipo_documento, numero_documento, nombres, apellidos, fecha_nacimiento, telefono, email, direccion, ciudad, departamento, codigo_postal, ocupacion, ingresos_mensuales, estado) VALUES
+('1100457902', 'CC', '1091234567', 'Sofía', 'Ramírez', '1997-02-28', '3187654321', 'sofia.ramirez@email.com', 'Calle 7 #8-9', 'Armenia', 'Quindío', '630001', 'Psicóloga', 2900000, 'Activo'),
+('1100457903', 'CE', 'CC345678', 'David', 'Silva', '1980-11-01', '3051234567', 'david.silva@email.com', 'Carrera 20 #1-2', 'Santa Marta', 'Magdalena', '470001', 'Gerente de Proyectos', 7000000, 'Activo'),
+('1100457904', 'CC', '1092345678', 'Isabella', 'González', '2001-07-07', '3029876543', 'isabella.gonzalez@email.com', 'Calle 50 #60-70', 'Popayán', 'Cauca', '190001', 'Diseñadora de Modas', 2200000, 'Activo'),
+('1100457905', 'NIT', '800654321', 'Tecno Solutions Ltda.', '', '2005-03-10', '6047890123', 'info@tecnosolutions.com', 'Av. El Poblado #10-20', 'Medellín', 'Antioquia', '050010', 'Empresa', 30000000, 'Activo'),
+('1100457906', 'CC', '1093456789', 'Mateo', 'Herrera', '1993-09-03', '3145678901', 'mateo.herrera@email.com', 'Calle 80 #90-10', 'Montería', 'Córdoba', '230001', 'Veterinario', 3100000, 'Activo'),
+('1100457907', 'CC', '1094567890', 'Valentina', 'Díaz', '1996-01-20', '3008765432', 'valentina.diaz@email.com', 'Carrera 70 #5-15', 'Villavicencio', 'Meta', '500001', 'Nutricionista', 2600000, 'Activo'),
+('1100457908', 'CC', '1095678901', 'Sebastián', 'Velasco', '1989-06-05', '3132109876', 'sebastian.velasco@email.com', 'Calle 3 #4-5', 'Pasto', 'Nariño', '520001', 'Fotógrafo', 2400000, 'Inactivo'),
+('1100457909', 'CE', 'DD567890', 'Andrea', 'Castro', '1982-10-14', '3216543210', 'andrea.castro@email.com', 'Av. Circunvalar #100-200', 'Tunja', 'Boyacá', '150001', 'Periodista', 3800000, 'Activo'),
+('1100457910', 'CC', '1096789012', 'Daniel', 'Rojas', '1991-04-11', '3017890123', 'daniel.rojas@email.com', 'Carrera 4 #5-6', 'Ibagué', 'Tolima', '730001', 'Arquitecto', 4100000, 'Activo'),
+('1100457911', 'CC', '1097890123', 'Valeria', 'Sierra', '2000-12-01', '3101234567', 'valeria.sierra@email.com', 'Callejón 1 #2-3', 'Yopal', 'Casanare', '850001', 'Marketing Digital', 2700000, 'Activo'),
+('1100457912', 'CC', '1098901234', 'Diego', 'Guerrero', '1986-08-22', '3176543210', 'diego.guerrero@email.com', 'Carrera 8 #9-10', 'Riohacha', 'La Guajira', '440001', 'Ingeniero de Sistemas', 4800000, 'Activo'),
+('1100457913', 'NIT', '900112233', 'Global Consultores S.A.S.', '', '2010-07-25', '6019876543', 'contacto@globalconsultores.com', 'Diagonal 45 #50-55', 'Barranquilla', 'Atlántico', '080001', 'Empresa', 45000000, 'Activo'),
+('1100457914', 'CC', '1099012345', 'Camila', 'Jiménez', '1994-03-17', '3002345678', 'camila.jimenez@email.com', 'Calle 100 #10-10', 'Bucaramanga', 'Santander', '680001', 'Contadora Pública', 3300000, 'Activo'),
+('1100457915', 'CE', 'EE789012', 'Juan Pablo', 'Ramírez', '1984-05-29', '3203456789', 'juanpablo.ramirez@email.com', 'Carrera 1 #2-3', 'Cali', 'Valle del Cauca', '760001', 'Médico', 7500000, 'Activo'),
+('1100457916', 'CC', '1100123456', 'Gabriela', 'Ortega', '1998-09-09', '3158765432', 'gabriela.ortega@email.com', 'Calle 25 #30-35', 'Manizales', 'Caldas', '170001', 'Publicista', 2900000, 'Activo'),
+('1100457917', 'CC', '1101234567', 'José Luis', 'Méndez', '1990-11-16', '3119876540', 'joseluis.mendez@email.com', 'Carrera 50 #55-60', 'Neiva', 'Huila', '410001', 'Electricista', 2300000, 'Activo'),
+('1100457918', 'CC', '1102345678', 'Natalia', 'Pardo', '1997-04-02', '3041234567', 'natalia.pardo@email.com', 'Calle 60 #70-80', 'Pereira', 'Risaralda', '660001', 'Diseñadora Industrial', 3100000, 'Activo'),
+('1100457919', 'NIT', '800998877', 'Inversiones XYZ S.A.S.', '', '2008-02-14', '6071234567', 'gerencia@inversionesxyz.com', 'Zona Franca #1-2', 'Cartagena', 'Bolívar', '130001', 'Empresa', 50000000, 'Activo'),
+('1100457920', 'CC', '1103456789', 'Ricardo', 'Sánchez', '1981-06-21', '3218765432', 'ricardo.sanchez@email.com', 'Carrera 10 #11-12', 'Cúcuta', 'Norte de Santander', '540001', 'Ingeniero Químico', 5200000, 'Activo'),
+('1100457921', 'CC', '1104567890', 'Carolina', 'Vargas', '1995-10-27', '3009876543', 'carolina.vargas@email.com', 'Calle 15 #16-17', 'Villavicencio', 'Meta', '500001', 'Veterinaria', 3000000, 'Activo'),
+('1100457922', 'CC', '1105678901', 'Pablo', 'Lozano', '1987-01-09', '3134567890', 'pablo.lozano@email.com', 'Av. Santander #20-25', 'Manizales', 'Caldas', '170001', 'Agrónomo', 3500000, 'Inactivo'),
+('1100457923', 'CE', 'FF123456', 'María Fernanda', 'Gil', '1992-08-08', '3167890123', 'mariafernanda.gil@email.com', 'Calle 30 #35-40', 'Bucaramanga', 'Santander', '680001', 'Química Farmacéutica', 4000000, 'Activo'),
+('1100457924', 'CC', '1106789012', 'Esteban', 'Quiroga', '1999-05-19', '3056789012', 'esteban.quiroga@email.com', 'Carrera 80 #85-90', 'Bogotá', 'Cundinamarca', '110111', 'Comunicador Social', 2800000, 'Activo'),
+('1100457925', 'CC', '1107890123', 'Jimena', 'Sierra', '1983-12-04', '3123456789', 'jimena.sierra@email.com', 'Calle 2 #3-4', 'Medellín', 'Antioquia', '050010', 'Arquitecta', 4300000, 'Activo'),
+('1100457926', 'NIT', '900223344', 'DataTech Solutions', '', '2015-09-01', '6023456789', 'contact@datatech.com', 'Parque Tecnológico #1', 'Cali', 'Valle del Cauca', '760001', 'Empresa', 28000000, 'Activo'),
+('1100457927', 'CC', '1108901234', 'Alejandro', 'Fuentes', '1996-02-13', '3145678901', 'alejandro.fuentes@email.com', 'Av. Principal #5-6', 'Cartagena', 'Bolívar', '130001', 'Programador', 3600000, 'Activo'),
+('1100457928', 'CE', 'GG987654', 'Laura Sofía', 'Ramírez', '1990-07-26', '3001122334', 'laura.ramirez@email.com', 'Calle 10 #12-14', 'Pereira', 'Risaralda', '660001', 'Diseñadora UX/UI', 3900000, 'Activo'),
+('1100457929', 'CC', '1109012345', 'Fernando', 'Castillo', '1985-04-07', '3189012345', 'fernando.castillo@email.com', 'Carrera 7 #8-9', 'Cúcuta', 'Norte de Santander', '540001', 'Contador', 4000000, 'Activo'),
+('1100457930', 'CC', '1110123456', 'Mariana', 'Muñoz', '1993-11-11', '3012345678', 'mariana.munoz@email.com', 'Calle 40 #50-60', 'Neiva', 'Huila', '410001', 'Ingeniera de Alimentos', 3200000, 'Activo'),
+('1100457931', 'CC', '1111234567', 'Andrés Felipe', 'García', '2000-06-29', '3229876543', 'andresfelipe.garcia@email.com', 'Carrera 15 #20-25', 'Villavicencio', 'Meta', '500001', 'Estudiante', 900000, 'Activo'),
+('1100457932', 'CC', '1112345678', 'Paola', 'Vargas', '1988-03-03', '3123456789', 'paola.vargas@email.com', 'Calle 100 #1-2', 'Manizales', 'Caldas', '170001', 'Abogada', 6000000, 'Activo'),
+('1100457933', 'NIT', '900334455', 'Innovación Digital S.A.S.', '', '2018-05-12', '6017654321', 'contacto@innovaciondigital.com', 'Centro Comercial #1', 'Bogotá', 'Cundinamarca', '110111', 'Empresa', 35000000, 'Activo'),
+('1100457934', 'CC', '1113456789', 'Jorge', 'Soto', '1991-09-01', '3167890123', 'jorge.soto@email.com', 'Carrera 10 #1-2', 'Medellín', 'Antioquia', '050010', 'Ingeniero Industrial', 4700000, 'Activo'),
+('1100457935', 'CE', 'HH345678', 'Daniela', 'Marín', '1994-02-05', '3008765432', 'daniela.marin@email.com', 'Calle 20 #25-30', 'Cali', 'Valle del Cauca', '760001', 'Psicóloga Clínica', 3400000, 'Activo'),
+('1100457936', 'CC', '1114567890', 'Julián', 'Pérez', '1980-10-10', '3176543210', 'julian.perez@email.com', 'Av. 30 #35-40', 'Barranquilla', 'Atlántico', '080001', 'Administrador de Empresas', 5500000, 'Activo'),
+('1100457937', 'CC', '1115678901', 'Sofía', 'López', '1997-07-07', '3012345678', 'sofia.lopez@email.com', 'Calle 50 #55-60', 'Bucaramanga', 'Santander', '680001', 'Diseñadora Gráfica', 2700000, 'Activo'),
+('1100457938', 'CC', '1116789012', 'Carlos', 'Martínez', '1989-01-18', '3158765432', 'carlos.martinez@email.com', 'Carrera 70 #75-80', 'Pereira', 'Risaralda', '660001', 'Desarrollador Web', 4200000, 'Activo'),
+('1100457939', 'CC', '1117890123', 'Laura', 'Gómez', '1995-04-04', '3041234567', 'laura.gomez@email.com', 'Calle 1 #2-3', 'Pasto', 'Nariño', '520001', 'Docente', 3000000, 'Activo');
