@@ -35,7 +35,7 @@ INSERT INTO Historial_Pagos (cuota_id, numero_transaccion, monto_pagado, monto_p
 (1, 'TRX0001', 6000, 5250, '2024-06-10', 'PSE', 'Online', 'admin', '192.168.0.10'),
 (2, 'TRX0002', 12750, 0, '2024-06-12', 'Tarjeta_Debito', 'App_Movil', 'admin', '192.168.0.11');
 
--- 7. Vamos a agregar mas variedad de clientes
+-- 3.1. Vamos a agregar mas variedad de clientes
 INSERT INTO Clientes (numero_cuenta, tipo_documento, numero_documento, nombres, apellidos, fecha_nacimiento, telefono, email, direccion, ciudad, departamento, codigo_postal, ocupacion, ingresos_mensuales, estado) VALUES
 ('1100457892', 'CC', '1034567890', 'Andrés', 'Gómez', '1990-03-25', '3112345670', 'andres.gomez@ejemplo.com', 'Calle 20 #10-30', 'Cali', 'Valle del Cauca', '760001', 'Ingeniero Civil', 4200000, 'Activo'),
 ('1100457893', 'CE', 'AA123456', 'Luisa', 'Martínez', '1985-07-12', '3209876543', 'luisa.martinez@ejemplo.com', 'Carrera 15 #34-56', 'Cartagena', 'Bolívar', '130001', 'Abogada', 6500000, 'Inactivo'),
@@ -47,3 +47,115 @@ INSERT INTO Clientes (numero_cuenta, tipo_documento, numero_documento, nombres, 
 ('1100457899', 'CC', '1078901234', 'Carlos', 'Mejía', '1994-04-21', '3229876543', 'carlos.mejia@ejemplo.com', 'Carrera 80 #45-60', 'Villavicencio', 'Meta', '500001', 'Agrónomo', 2100000, 'Suspendido'),
 ('1100457900', 'CC', '1089012345', 'Laura', 'Moreno', '1998-08-05', '3123456789', 'laura.moreno@ejemplo.com', 'Calle 12 #34-56', 'Manizales', 'Caldas', '170001', 'Diseñadora UX', 4500000, 'Activo'),
 ('1100457901', 'CC', '1090123456', 'Felipe', 'Castro', '1983-01-19', '3167890123', 'felipe.castro@ejemplo.com', 'Av. 30 #25-55', 'Barranquilla', 'Atlántico', '080001', 'Contador', 3900000, 'Activo');
+
+-- 3.2 Vamos a modificar la fecha de registro
+
+UPDATE Clientes
+SET fecha_registro = '2023-11-14 10:25:00'
+WHERE numero_cuenta = '1100457892';
+
+UPDATE Clientes
+SET fecha_registro = '2024-01-09 08:45:00'
+WHERE numero_cuenta = '1100457893';
+
+UPDATE Clientes
+SET fecha_registro = '2025-03-22 14:10:00'
+WHERE numero_cuenta = '1100457894';
+
+UPDATE Clientes
+SET fecha_registro = '2024-10-01 09:00:00'
+WHERE numero_cuenta = '1100457895';
+
+UPDATE Clientes
+SET fecha_registro = '2024-05-17 16:32:00'
+WHERE numero_cuenta = '1100457896';
+
+UPDATE Clientes
+SET fecha_registro = '2023-09-27 12:05:00'
+WHERE numero_cuenta = '1100457897';
+
+UPDATE Clientes
+SET fecha_registro = '2025-01-03 11:45:00'
+WHERE numero_cuenta = '1100457898';
+
+UPDATE Clientes
+SET fecha_registro = '2024-07-21 19:20:00'
+WHERE numero_cuenta = '1100457899';
+
+UPDATE Clientes
+SET fecha_registro = '2024-12-12 07:35:00'
+WHERE numero_cuenta = '1100457900';
+
+UPDATE Clientes
+SET fecha_registro = '2023-08-02 13:15:00'
+WHERE numero_cuenta = '1100457901';
+
+-- 3.3 vamos a modificar la ultima vez de acceso de los clientes
+UPDATE Clientes
+SET ultimo_acceso = '2025-06-22 08:12:00'
+WHERE numero_cuenta = '1100457892';
+
+UPDATE Clientes
+SET ultimo_acceso = '2025-05-14 17:35:00'
+WHERE numero_cuenta = '1100457893';
+
+UPDATE Clientes
+SET ultimo_acceso = '2025-06-20 13:05:00'
+WHERE numero_cuenta = '1100457894';
+
+UPDATE Clientes
+SET ultimo_acceso = '2025-04-30 09:00:00'
+WHERE numero_cuenta = '1100457895';
+
+UPDATE Clientes
+SET ultimo_acceso = '2025-06-18 22:50:00'
+WHERE numero_cuenta = '1100457896';
+
+UPDATE Clientes
+SET ultimo_acceso = '2024-12-10 10:45:00'
+WHERE numero_cuenta = '1100457897';
+
+UPDATE Clientes
+SET ultimo_acceso = '2025-06-21 06:40:00'
+WHERE numero_cuenta = '1100457898';
+
+UPDATE Clientes
+SET ultimo_acceso = '2025-03-15 14:20:00'
+WHERE numero_cuenta = '1100457899';
+
+UPDATE Clientes
+SET ultimo_acceso = '2025-06-19 19:30:00'
+WHERE numero_cuenta = '1100457900';
+
+UPDATE Clientes
+SET ultimo_acceso = '2025-01-27 12:15:00'
+WHERE numero_cuenta = '1100457901';
+
+UPDATE Clientes
+SET ultimo_acceso = '2025-06-01 22:05:00'
+WHERE numero_cuenta = 1100457890;
+
+UPDATE Clientes
+SET ultimo_acceso = '2025-03-26 10:14:00'
+WHERE numero_cuenta = 1100457891;
+
+-- 3.4 vamos a agregar a algunas observaciones 
+UPDATE Clientes
+SET observaciones = 'Cliente con perfil estudiantil; ingresos limitados, potencial para plan joven.'
+WHERE numero_cuenta = '1100457894';
+
+UPDATE Clientes
+SET observaciones = 'Bloqueo preventivo por actividad sospechosa. Requiere revisión manual.'
+WHERE numero_cuenta = '1100457897';
+
+UPDATE Clientes
+SET observaciones = 'Cliente corporativo con alto volumen de ingresos. Priorizar seguimiento comercial.'
+WHERE numero_cuenta = '1100457895';
+
+UPDATE Clientes
+SET observaciones = 'Cliente suspendido por mora en cuotas de manejo. Requiere contacto del área de cartera.'
+WHERE numero_cuenta = '1100457899';
+
+UPDATE Clientes
+SET observaciones = 'Perfil de cliente premium. Posible candidato a tarjeta Visa Gold o Platinum.'
+WHERE numero_cuenta = '1100457893';
