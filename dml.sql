@@ -24,3 +24,8 @@ INSERT INTO Clientes (numero_cuenta, tipo_documento, numero_documento, nombres, 
 INSERT INTO tarjetas (numero_tarjeta, cliente_id, tipo_tarjeta_id, descuento_id, monto_apertura, limite_credito, saldo_disponible, fecha_apertura, fecha_vencimiento, estado) VALUES
 ('4000123412341234', 1, 3, 3, 1200000, 3000000, 3000000, '2024-05-01', '2027-05-01', 'Activa'),
 ('4000987612345678', 2, 3, 2, 700000, 2000000, 2000000, '2024-06-01', '2027-06-01', 'Activa');
+
+-- 5. Cuotas de manejo
+INSERT INTO cuotas_manejo (tarjeta_id, periodo_mes, periodo_año, monto_base, porcentaje_descuento, valor_descuento, monto_final, fecha_vencimiento) VALUES
+(1, 6, 2024, 15000, 25.00, 3750, 11250, '2024-06-30'),
+(2, 6, 2024, 15000, 15.00, 2250, 12750, '2024-06-30');
