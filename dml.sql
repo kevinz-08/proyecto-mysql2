@@ -336,3 +336,24 @@ UPDATE cuotas_manejo SET fecha_generacion = '2024-06-09 13:05:00' WHERE cuota_id
 UPDATE cuotas_manejo SET fecha_generacion = '2024-06-10 10:40:00' WHERE cuota_id = 10;
 UPDATE cuotas_manejo SET fecha_generacion = '2024-06-11 11:25:00' WHERE cuota_id = 11;
 UPDATE cuotas_manejo SET fecha_generacion = '2024-06-12 08:10:00' WHERE cuota_id = 12;
+
+-- modificacion de la fecha de vencimiento
+-- Cuotas vencidas 
+UPDATE cuotas_manejo SET fecha_vencimiento = '2024-06-10' WHERE cuota_id = 1;
+UPDATE cuotas_manejo SET fecha_vencimiento = '2024-06-15' WHERE cuota_id = 2;
+UPDATE cuotas_manejo SET fecha_vencimiento = '2024-06-18' WHERE cuota_id = 3;
+
+-- Cuotas venciendo pronto
+UPDATE cuotas_manejo SET fecha_vencimiento = '2024-06-24' WHERE cuota_id = 4;
+UPDATE cuotas_manejo SET fecha_vencimiento = '2024-06-25' WHERE cuota_id = 5;
+UPDATE cuotas_manejo SET fecha_vencimiento = '2024-06-27' WHERE cuota_id = 6;
+
+-- Cuotas con fecha estándar a final de mes
+UPDATE cuotas_manejo SET fecha_vencimiento = '2024-06-30' WHERE cuota_id = 7;
+UPDATE cuotas_manejo SET fecha_vencimiento = '2024-06-30' WHERE cuota_id = 8;
+UPDATE cuotas_manejo SET fecha_vencimiento = '2024-06-30' WHERE cuota_id = 9;
+
+-- Cuotas con fecha un poco posterior para pruebas con "por vencer"
+UPDATE cuotas_manejo SET fecha_vencimiento = '2024-07-02' WHERE cuota_id = 10;
+UPDATE cuotas_manejo SET fecha_vencimiento = '2024-07-05' WHERE cuota_id = 11;
+UPDATE cuotas_manejo SET fecha_vencimiento = '2024-07-10' WHERE cuota_id = 12;

@@ -66,3 +66,8 @@ SELECT cuota_id FROM cuotas_manejo WHERE tarjeta_id IN (1, 2) AND periodo_mes = 
 SELECT *
 FROM cuotas_manejo
 WHERE MONTH(fecha_generacion) = 6 AND YEAR(fecha_generacion) = 2024;
+
+-- consulta 22: mostrar cuotas que esten pendientes por pagar con mas de 5 dias de vencimiento
+SELECT *
+FROM cuotas_manejo
+WHERE estado = 'Pendiente' AND fecha_vencimiento < CURDATE() - INTERVAL 5 DAY;
