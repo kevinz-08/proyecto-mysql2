@@ -34,3 +34,16 @@ INSERT INTO cuotas_manejo (tarjeta_id, periodo_mes, periodo_año, monto_base, po
 INSERT INTO Historial_Pagos (cuota_id, numero_transaccion, monto_pagado, monto_pendiente, fecha_pago, metodo_pago, canal_pago, usuario_registro, ip_origen) VALUES
 (1, 'TRX0001', 6000, 5250, '2024-06-10', 'PSE', 'Online', 'admin', '192.168.0.10'),
 (2, 'TRX0002', 12750, 0, '2024-06-12', 'Tarjeta_Debito', 'App_Movil', 'admin', '192.168.0.11');
+
+-- 7. Vamos a agregar mas variedad de clientes
+INSERT INTO Clientes (numero_cuenta, tipo_documento, numero_documento, nombres, apellidos, fecha_nacimiento, telefono, email, direccion, ciudad, departamento, codigo_postal, ocupacion, ingresos_mensuales, estado) VALUES
+('1100457892', 'CC', '1034567890', 'Andrés', 'Gómez', '1990-03-25', '3112345670', 'andres.gomez@ejemplo.com', 'Calle 20 #10-30', 'Cali', 'Valle del Cauca', '760001', 'Ingeniero Civil', 4200000, 'Activo'),
+('1100457893', 'CE', 'AA123456', 'Luisa', 'Martínez', '1985-07-12', '3209876543', 'luisa.martinez@ejemplo.com', 'Carrera 15 #34-56', 'Cartagena', 'Bolívar', '130001', 'Abogada', 6500000, 'Inactivo'),
+('1100457894', 'CC', '1045678912', 'Camilo', 'Ríos', '2000-11-08', '3105553333', 'camilo.rios@ejemplo.com', 'Av. Siempre Viva #100-01', 'Bucaramanga', 'Santander', '680001', 'Estudiante', 850000, 'Activo'),
+('1100457895', 'NIT', '800123456', 'Empresa ABC S.A.S.', '', '1999-01-01', '6014567890', 'contacto@empresaabc.com', 'Zona Industrial KM 5', 'Medellín', 'Antioquia', '050010', 'Empresa', 25000000, 'Activo'),
+('1100457896', 'CC', '1056789012', 'Tatiana', 'Vargas', '1992-09-18', '3004567890', 'tatiana.vargas@ejemplo.com', 'Calle 45 #23-17', 'Pereira', 'Risaralda', '660001', 'Arquitecta', 3700000, 'Activo'),
+('1100457897', 'CE', 'BB987654', 'José', 'Torres', '1987-05-03', '3157896541', 'jose.torres@ejemplo.com', 'Carrera 9 #89-20', 'Cúcuta', 'Norte de Santander', '540001', 'Técnico Electricista', 2800000, 'Bloqueado'),
+('1100457898', 'CC', '1067890123', 'Diana', 'López', '1999-12-30', '3012345671', 'diana.lopez@ejemplo.com', 'Calle 1 #2-3', 'Neiva', 'Huila', '410001', 'Docente', 3200000, 'Activo'),
+('1100457899', 'CC', '1078901234', 'Carlos', 'Mejía', '1994-04-21', '3229876543', 'carlos.mejia@ejemplo.com', 'Carrera 80 #45-60', 'Villavicencio', 'Meta', '500001', 'Agrónomo', 2100000, 'Suspendido'),
+('1100457900', 'CC', '1089012345', 'Laura', 'Moreno', '1998-08-05', '3123456789', 'laura.moreno@ejemplo.com', 'Calle 12 #34-56', 'Manizales', 'Caldas', '170001', 'Diseñadora UX', 4500000, 'Activo'),
+('1100457901', 'CC', '1090123456', 'Felipe', 'Castro', '1983-01-19', '3167890123', 'felipe.castro@ejemplo.com', 'Av. 30 #25-55', 'Barranquilla', 'Atlántico', '080001', 'Contador', 3900000, 'Activo');
