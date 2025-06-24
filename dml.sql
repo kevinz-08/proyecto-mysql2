@@ -29,3 +29,8 @@ INSERT INTO tarjetas (numero_tarjeta, cliente_id, tipo_tarjeta_id, descuento_id,
 INSERT INTO cuotas_manejo (tarjeta_id, periodo_mes, periodo_año, monto_base, porcentaje_descuento, valor_descuento, monto_final, fecha_vencimiento) VALUES
 (1, 6, 2024, 15000, 25.00, 3750, 11250, '2024-06-30'),
 (2, 6, 2024, 15000, 15.00, 2250, 12750, '2024-06-30');
+
+-- 6. Historial de Pagos
+INSERT INTO Historial_Pagos (cuota_id, numero_transaccion, monto_pagado, monto_pendiente, fecha_pago, metodo_pago, canal_pago, usuario_registro, ip_origen) VALUES
+(1, 'TRX0001', 6000, 5250, '2024-06-10', 'PSE', 'Online', 'admin', '192.168.0.10'),
+(2, 'TRX0002', 12750, 0, '2024-06-12', 'Tarjeta_Debito', 'App_Movil', 'admin', '192.168.0.11');
