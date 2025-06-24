@@ -230,3 +230,36 @@ WHERE cliente_id = '11';
 UPDATE tarjetas
 SET pin_encriptado = 'pin12'
 WHERE cliente_id = '12';
+
+-- modificacion de las cuotas de manejo para dar mas variedad
+INSERT INTO cuotas_manejo (tarjeta_id, periodo_mes, periodo_año, monto_base, porcentaje_descuento, valor_descuento, monto_final, fecha_vencimiento, dias_mora, interes_mora, monto_total_con_mora, estado) VALUES
+(3, 6, 2024, 8000, 0.00, 0, 8000, '2024-06-30', 0, 0, 8000, 'Pagada'),
+
+(4, 6, 2024, 35000, 20.00, 7000, 28000, '2024-06-30', 5, 1800, 29800, 'Vencida'),
+
+(5, 6, 2024, 12000, 10.00, 1200, 10800, '2024-06-30', 0, 0, 10800, 'Pendiente'),
+
+(6, 6, 2024, 25000, 35.00, 8750, 16250, '2024-06-30', 15, 3500, 19750, 'Vencida'),
+
+(7, 6, 2024, 15000, 15.00, 2250, 12750, '2024-06-30', 0, 0, 12750, 'Pagada'),
+
+(8, 6, 2024, 12000, 0.00, 0, 12000, '2024-06-30', 2, 500, 12500, 'Condonada'),
+
+(9, 6, 2024, 35000, 25.00, 8750, 26250, '2024-06-30', 0, 0, 26250, 'Pendiente'),
+
+(10, 6, 2024, 25000, 15.00, 3750, 21250, '2024-06-30', 0, 0, 21250, 'Pendiente'),
+
+(11, 6, 2024, 15000, 5.00, 750, 14250, '2024-06-30', 1, 200, 14450, 'Pagada'),
+
+(12, 6, 2024, 25000, 0.00, 0, 25000, '2024-06-30', 0, 0, 25000, 'Pagada');
+
+UPDATE cuotas_manejo
+SET interes_mora = 1800,
+    monto_total_con_mora = monto_final + 1800
+WHERE tarjeta_id = 1 AND periodo_mes = 6 AND periodo_año = 2024;
+
+UPDATE cuotas_manejo
+SET interes_mora = 1200,
+    monto_total_con_mora = monto_final + 1200
+WHERE tarjeta_id = 2 AND periodo_mes = 6 AND periodo_año = 2024;
+
