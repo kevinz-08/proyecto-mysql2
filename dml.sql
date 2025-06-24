@@ -159,3 +159,74 @@ WHERE numero_cuenta = '1100457899';
 UPDATE Clientes
 SET observaciones = 'Perfil de cliente premium. Posible candidato a tarjeta Visa Gold o Platinum.'
 WHERE numero_cuenta = '1100457893';
+
+-- modificacion de las tarjetas para dar mas variedad
+INSERT INTO tarjetas (numero_tarjeta, cliente_id, tipo_tarjeta_id, descuento_id, monto_apertura, limite_credito, saldo_disponible, fecha_apertura, fecha_vencimiento, fecha_ultimo_uso, pin_encriptado, estado, motivo_bloqueo, observaciones) VALUES
+('4532-1234-5678-9012', 3, 1, 2, 60000, 500000, 480000, '2024-01-15', '2026-01-15', '2025-06-01 09:00:00', 'pin01', 'Activa', NULL, 'Tarjeta joven aprobada sin inconvenientes'),
+('4532-9876-5432-1098', 4, 3, 3, 250000, 1800000, 1200000, '2023-11-20', '2026-11-20', '2025-06-22 11:00:00', 'pin02', 'Activa', NULL, NULL),
+('4532-5555-6666-7777', 5, 1, 1, 50000, 200000, 180000, '2025-02-01', '2027-02-01', NULL, 'pin03', 'Activa', NULL, 'Tarjeta estudiantil asignada recientemente'),
+('4532-8888-9999-0000', 6, 5, 5, 2000000, 10000000, 8000000, '2024-03-10', '2029-03-10', '2025-06-18 14:45:00', 'pin04', 'Activa', NULL, 'Tarjeta corporativa alta gama'),
+('4532-4444-1111-2222', 7, 2, 2, 120000, 1000000, 900000, '2023-06-25', '2026-06-25', '2025-06-20 08:12:00', 'pin05', 'Suspendida', NULL, 'Suspendida por mora'),
+('4532-3333-6666-9999', 8, 4, 4, 700000, 6000000, 2000000, '2022-09-01', '2025-09-01', '2024-12-30 17:00:00', 'pin06', 'Bloqueada', 'Intentos de acceso inválidos', NULL),
+('4532-1010-2020-3030', 9, 3, 3, 200000, 1500000, 1450000, '2023-12-01', '2026-12-01', '2025-06-15 19:00:00', 'pin07', 'Activa', NULL, NULL),
+('4532-1111-2222-3333', 10, 2, 1, 100000, 700000, 700000, '2024-07-10', '2027-07-10', NULL, 'pin08', 'Cancelada', 'Solicitud del cliente', 'Saldo en cero'),
+('4532-4444-5555-6666', 11, 5, 4, 1500000, 9000000, 8500000, '2023-05-20', '2026-05-20', '2025-06-21 13:30:00', 'pin09', 'Activa', NULL, 'Cliente premium con excelente historial'),
+('4532-7777-8888-9999', 12, 4, 3, 1000000, 5000000, 4500000, '2025-01-01', '2028-01-01', NULL, 'pin10', 'Vencida', NULL, 'No se ha renovado');
+
+-- vamos a modular el numero de tarjeta de una mejor manera (los primeros dos son diferentes al resto)
+UPDATE tarjetas
+SET pin_encriptado = 'pin01'
+WHERE cliente_id = '1';
+
+UPDATE tarjetas
+SET numero_tarjeta = '4532-3141-5926-5358'
+WHERE cliente_id = '1';
+
+UPDATE tarjetas
+SET pin_encriptado = 'pin02'
+WHERE cliente_id = '2';
+
+UPDATE tarjetas
+SET numero_tarjeta = '4532-2718-2818-2845'
+WHERE cliente_id = '2';
+
+-- vamos a corregir un error de pines encriptados
+UPDATE tarjetas
+SET pin_encriptado = 'pin03'
+WHERE cliente_id = '3';
+
+UPDATE tarjetas
+SET pin_encriptado = 'pin04'
+WHERE cliente_id = '4';
+
+UPDATE tarjetas
+SET pin_encriptado = 'pin05'
+WHERE cliente_id = '5';
+
+UPDATE tarjetas
+SET pin_encriptado = 'pin06'
+WHERE cliente_id = '6';
+
+UPDATE tarjetas
+SET pin_encriptado = 'pin07'
+WHERE cliente_id = '7';
+
+UPDATE tarjetas
+SET pin_encriptado = 'pin08'
+WHERE cliente_id = '8';
+
+UPDATE tarjetas
+SET pin_encriptado = 'pin09'
+WHERE cliente_id = '9';
+
+UPDATE tarjetas
+SET pin_encriptado = 'pin10'
+WHERE cliente_id = '10';
+
+UPDATE tarjetas
+SET pin_encriptado = 'pin11'
+WHERE cliente_id = '11';
+
+UPDATE tarjetas
+SET pin_encriptado = 'pin12'
+WHERE cliente_id = '12';

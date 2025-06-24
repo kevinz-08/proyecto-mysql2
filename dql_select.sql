@@ -52,4 +52,5 @@ WHERE observaciones IS NOT NULL
 SELECT cliente_id, numero_documento, nombres, apellidos, email, telefono, ingresos_mensuales
 FROM Clientes
 ORDER BY ingresos_mensuales DESC
-LIMIT 5
+LIMIT 5;
+
