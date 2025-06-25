@@ -116,3 +116,76 @@ LIMIT 5;
 SELECT SUM(monto_total_con_mora) AS ingresos_proyectados
 FROM cuotas_manejo
 WHERE estado = 'Pendiente';
+
+-- 31-40 Consultas - CONSULTAS DE HISTORIAL DE PAGOS
+
+
+
+-- 41-50 Consultas - CONSULTAS DE TARJETAS CONSULTAS DE DESCUENTOS Y BENEFICIOS
+-- consulta 41: listar todos los niveles de descuento vigentes con sus caracteristicas
+SELECT *
+FROM niveles_descuento
+WHERE estado = '1';
+
+-- consulta 42: consultar el total de dinero descontado al usuario por cada nivel de tarjeta
+SELECT nd.nombre_descuento AS nivel_descuento, COUNT(cm.cuota_id) AS total_cuotas, SUM(cm.valor_descuento) AS total_valor_descontado
+FROM cuotas_manejo cm
+JOIN tarjetas t ON cm.tarjeta_id = t.tarjeta_id
+JOIN niveles_descuento nd ON t.descuento_id = nd.descuento_id
+GROUP BY nd.nombre_descuento ORDER BY total_valor_descontado DESC;
+
+-- consulta 43: contar cuanto clientes unicos han recibido un descuento
+SELECT COUNT(DISTINCT t.cliente_id) AS clientes_con_descuento
+FROM tarjetas t
+WHERE t.descuento_id IS NOT NULL;
+
+-- consutla 44: analizar que rango de descuento es mas utilizados
+SELECT nd.nombre_descuento, nd.porcentaje_descuento, COUNT(*) AS total_uso
+FROM tarjetas t
+JOIN niveles_descuento nd ON t.descuento_id = nd.descuento_id
+GROUP BY nd.nombre_descuento, nd.porcentaje_descuento
+ORDER BY total_uso DESC;
+
+-- consulta 45: comparar pagos de cuotas con descuento y sin descuento
+SELECT cm.porcentaje_descuento, COUNT(*) AS total_pagos, SUM(hp.monto_pagado) AS monto_total_pagado
+FROM historial_pagos hp
+JOIN cuotas_manejo cm ON hp.cuota_id = cm.cuota_id
+WHERE hp.estado_transaccion = 'Exitoso'
+GROUP BY cm.porcentaje_descuento
+ORDER BY cm.porcentaje_descuento;
+
+-- consulta 46: identificar descuentos que estan por expirar en 30 dias                 -- aqui todos los niveles de descuento tecnicamente no tienen fecha de vencimiento,
+select nd.nombre_descuento, nd.porcentaje_descuento, nd.fecha_inicio, nd.fecha_fin      -- pero igual hicimos la consulta
+from niveles_descuento nd
+where nd.fecha_fin <= DATE_ADD(CURDATE(), INTERVAL 30 DAY);
+
+-- consulta 47: encontrar el cliente que que mas ahorrado con los descuentos
+SELECT c.cliente_id, c.nombres, c.apellidos, SUM(cm.valor_descuento) AS total_ahorrado
+FROM cuotas_manejo cm
+JOIN tarjetas t ON cm.tarjeta_id = t.tarjeta_id
+JOIN clientes c ON t.cliente_id = c.cliente_id
+GROUP BY c.cliente_id
+ORDER BY total_ahorrado DESC
+LIMIT 1;
+
+-- consulta 48: calcular el impacto de descuentos en los ingresos totales
+SELECT
+  SUM(cm.monto_base) AS ingresos_brutos,
+  SUM(cm.monto_final) AS ingresos_netos,
+  SUM(cm.valor_descuento) AS total_descuento,
+  ROUND((SUM(cm.valor_descuento) / SUM(cm.monto_base)) * 100, 2) AS porcentaje_impacto_descuento
+FROM cuotas_manejo cm;
+
+-- consulta 49: identificar descuentos activos que no han sido aplicados
+SELECT nd.descuento_id, nd.nombre_descuento, nd.porcentaje_descuento, nd.estado       -- como tal todos los descuentos estan siendo aplicado en este momento
+FROM niveles_descuento nd                                                             -- entonces hacemos la consulta pero es normal que no se refleje nada
+LEFT JOIN tarjetas t ON nd.descuento_id = t.descuento_id
+WHERE t.descuento_id IS NULL AND nd.estado = TRUE;
+
+-- consulta 50: mostrar la tendencia de uso de descuentos por trimestre
+SELECT YEAR(cm.fecha_generacion) AS año, QUARTER(cm.fecha_generacion) AS trimestre, nd.nombre_descuento, COUNT(*) AS total_aplicaciones
+FROM cuotas_manejo cm
+JOIN tarjetas t ON cm.tarjeta_id = t.tarjeta_id
+JOIN niveles_descuento nd ON t.descuento_id = nd.descuento_id
+GROUP BY año, trimestre, nd.nombre_descuento
+ORDER BY año, trimestre, total_aplicaciones DESC;
