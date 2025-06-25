@@ -71,3 +71,11 @@ WHERE MONTH(fecha_generacion) = 6 AND YEAR(fecha_generacion) = 2024;
 SELECT *
 FROM cuotas_manejo
 WHERE estado = 'Pendiente' AND fecha_vencimiento < CURDATE() - INTERVAL 5 DAY;
+
+-- consulta 23: obtener el numero de cuotas pagadas en un mes especifico
+-- en este caso vamos a obtener las cuotas pagadas en 2do trimestre de 2024
+SELECT *
+FROM historial_pagos
+WHERE estado_transaccion = 'Exitoso' AND fecha_pago BETWEEN '2024-03-01' AND '2024-06-30';
+
+-- consulta 24: listar cuotas que tienen algun descuento aplicado superior al 10%
