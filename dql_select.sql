@@ -79,3 +79,40 @@ FROM historial_pagos
 WHERE estado_transaccion = 'Exitoso' AND fecha_pago BETWEEN '2024-03-01' AND '2024-06-30';
 
 -- consulta 24: listar cuotas que tienen algun descuento aplicado superior al 10%
+SELECT cuota_id, tarjeta_id, porcentaje_descuento
+FROM cuotas_manejo
+WHERE porcentaje_descuento > 10;
+
+-- consulta 25: mostrar todas las cuotas generadas para una tarjeta especifica
+SELECT *
+FROM cuotas_manejo
+WHERE tarjeta_id = 1;
+
+-- consulta 26: contar cuantas cuotas hay en cada estado
+SELECT estado, COUNT(*) AS estado
+FROM cuotas_manejo
+GROUP BY estado ORDER BY estado DESC;
+
+-- consulta 27: calcular el monto promedio de cuotas por tipo de tarjeta
+SELECT tt.nombre_tipo AS Tipo_Tarjeta,
+    ROUND(AVG(cm.monto_final), 2) AS promedio_monto_cuota
+FROM cuotas_manejo cm
+JOIN tarjetas t ON cm.tarjeta_id = t.tarjeta_id
+JOIN tipos_tarjeta tt ON t.tipo_tarjeta_id = tt.tipo_tarjeta_id
+GROUP BY tt.nombre_tipo;
+
+-- consulta 28: identificar cuotas cuyo metodo de calculo sea automatico
+SELECT cuota_id, periodo_año, fecha_generacion, fecha_vencimiento, metodo_calculo
+FROM cuotas_manejo
+WHERE metodo_calculo = 'Automatico';
+
+-- consulta 29: encontrar las 5 cuotas con mayor valor de descuento aplicado
+SELECT cuota_id, porcentaje_descuento
+FROM cuotas_manejo
+ORDER BY porcentaje_descuento DESC
+LIMIT 5;
+
+--consulta 30: calcular el total de ingresos proyectados por cuotas pendientes
+SELECT SUM(monto_total_con_mora) AS ingresos_proyectados
+FROM cuotas_manejo
+WHERE estado = 'Pendiente';
