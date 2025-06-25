@@ -651,3 +651,45 @@ INSERT INTO tarjetas (numero_tarjeta, cliente_id, tipo_tarjeta_id, descuento_id,
 ('4532-5757-5858-5959', 49, 4, 4, 700000, 5800000, 5000000, '2024-01-30', '2027-01-30', '2025-06-22 13:00:00', 'pin49', 'Activa', NULL, 'Cliente con historial de pago muy bueno.'),
 ('4532-6060-6161-6262', 50, 1, 1, 40000, 150000, 120000, '2025-03-25', '2028-03-25', NULL, 'pin50', 'Activa', NULL, 'Último cliente de la lista, tarjeta básica.')
 ;
+
+-- modificacion de tarjeta_id
+UPDATE tarjetas SET tarjeta_id = 13 WHERE cliente_id = 13;
+UPDATE tarjetas SET tarjeta_id = 14 WHERE cliente_id = 14;
+UPDATE tarjetas SET tarjeta_id = 15 WHERE cliente_id = 15;
+UPDATE tarjetas SET tarjeta_id = 16 WHERE cliente_id = 16;
+UPDATE tarjetas SET tarjeta_id = 17 WHERE cliente_id = 17;
+UPDATE tarjetas SET tarjeta_id = 18 WHERE cliente_id = 18;
+UPDATE tarjetas SET tarjeta_id = 19 WHERE cliente_id = 19;
+UPDATE tarjetas SET tarjeta_id = 20 WHERE cliente_id = 20;
+UPDATE tarjetas SET tarjeta_id = 21 WHERE cliente_id = 21;
+UPDATE tarjetas SET tarjeta_id = 22 WHERE cliente_id = 22;
+UPDATE tarjetas SET tarjeta_id = 23 WHERE cliente_id = 23;
+UPDATE tarjetas SET tarjeta_id = 24 WHERE cliente_id = 24;
+UPDATE tarjetas SET tarjeta_id = 25 WHERE cliente_id = 25;
+UPDATE tarjetas SET tarjeta_id = 26 WHERE cliente_id = 26;
+UPDATE tarjetas SET tarjeta_id = 27 WHERE cliente_id = 27;
+UPDATE tarjetas SET tarjeta_id = 28 WHERE cliente_id = 28;
+UPDATE tarjetas SET tarjeta_id = 29 WHERE cliente_id = 29;
+UPDATE tarjetas SET tarjeta_id = 30 WHERE cliente_id = 30;
+UPDATE tarjetas SET tarjeta_id = 31 WHERE cliente_id = 31;
+UPDATE tarjetas SET tarjeta_id = 32 WHERE cliente_id = 32;
+UPDATE tarjetas SET tarjeta_id = 33 WHERE cliente_id = 33;
+UPDATE tarjetas SET tarjeta_id = 34 WHERE cliente_id = 34;
+UPDATE tarjetas SET tarjeta_id = 35 WHERE cliente_id = 35;
+UPDATE tarjetas SET tarjeta_id = 36 WHERE cliente_id = 36;
+UPDATE tarjetas SET tarjeta_id = 37 WHERE cliente_id = 37;
+UPDATE tarjetas SET tarjeta_id = 38 WHERE cliente_id = 38;
+UPDATE tarjetas SET tarjeta_id = 39 WHERE cliente_id = 39;
+UPDATE tarjetas SET tarjeta_id = 40 WHERE cliente_id = 40;
+UPDATE tarjetas SET tarjeta_id = 41 WHERE cliente_id = 41;
+UPDATE tarjetas SET tarjeta_id = 42 WHERE cliente_id = 42;
+UPDATE tarjetas SET tarjeta_id = 43 WHERE cliente_id = 43;
+UPDATE tarjetas SET tarjeta_id = 44 WHERE cliente_id = 44;
+UPDATE tarjetas SET tarjeta_id = 45 WHERE cliente_id = 45;
+UPDATE tarjetas SET tarjeta_id = 46 WHERE cliente_id = 46;
+UPDATE tarjetas SET tarjeta_id = 47 WHERE cliente_id = 47;
+UPDATE tarjetas SET tarjeta_id = 48 WHERE cliente_id = 48;
+UPDATE tarjetas SET tarjeta_id = 49 WHERE cliente_id = 49;
+UPDATE tarjetas SET tarjeta_id = 50 WHERE cliente_id = 50;
+
+UPDATE tarjetas SET tarjeta_id = 14
