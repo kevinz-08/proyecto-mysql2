@@ -25,7 +25,6 @@ CREATE TABLE clientes (
     INDEX idx_email (email),
     INDEX idx_estado (estado)
 );
-
 -- tabla tipo tarjeta
 CREATE TABLE tipos_tarjeta (
     tipo_tarjeta_id INT PRIMARY KEY AUTO_INCREMENT,
@@ -44,7 +43,6 @@ CREATE TABLE tipos_tarjeta (
     estado BOOLEAN DEFAULT TRUE,
     INDEX idx_codigo (codigo_tipo)
 );
-
 -- tabla niveles de descuento
 CREATE TABLE niveles_descuento (
     descuento_id INT PRIMARY KEY AUTO_INCREMENT,
