@@ -1,7 +1,7 @@
 USE BancoCL;
 -- TABLAS
 -- tabla de clientes
-CREATE TABLE Clientes (
+CREATE TABLE clientes (
     cliente_id INT PRIMARY KEY AUTO_INCREMENT,
     numero_cuenta VARCHAR(20) UNIQUE NOT NULL,
     tipo_documento ENUM('CC', 'CE', 'PA', 'NIT') NOT NULL,
@@ -27,7 +27,7 @@ CREATE TABLE Clientes (
 );
 
 -- tabla tipo tarjeta
-CREATE TABLE Tipos_Tarjeta (
+CREATE TABLE tipos_tarjeta (
     tipo_tarjeta_id INT PRIMARY KEY AUTO_INCREMENT,
     codigo_tipo VARCHAR(10) UNIQUE NOT NULL,
     nombre_tipo VARCHAR(50) UNIQUE NOT NULL,
@@ -145,7 +145,7 @@ CREATE TABLE historial_pagos (
 
 -- tabla de audioria de operaciones
 -- IMPORTANTE -> esta tabla tecnicamente no esta relacionada con otras entidades ya que su proposito es meramente logico, eso quiere decir que su objetivo es registrar toda operacion que afecte las demas tablas de nuestra base de datos, para mas informacion, por favor dirigirse al readme que explica el funcionamiento de cada una de las tablas. 
-CREATE TABLE Auditoria_Operaciones (
+CREATE TABLE auditoria_operaciones (
     auditoria_id INT PRIMARY KEY AUTO_INCREMENT,
     tabla_afectada VARCHAR(50) NOT NULL,
     operacion ENUM('INSERT', 'UPDATE', 'DELETE') NOT NULL,
