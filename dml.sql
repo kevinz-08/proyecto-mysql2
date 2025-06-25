@@ -773,3 +773,43 @@ INSERT INTO historial_pagos (cuota_id, numero_transaccion, monto_pagado, monto_p
 (48, 'TXN0048', 0, 24000, '2024-06-28 11:00:00', 'Transferencia', 'REF-48046', 'Bancolombia', 'Online', 'usuario48', '192.168.0.48', 'Pendiente', 0, 'Revisión manual de transferencia'),
 (49, 'TXN0049', 40000, 6700, '2024-07-01 14:00:00', 'PSE', 'REF-49047', 'Davivienda', 'Online', 'usuario49', '192.168.0.49', 'Exitoso', 0, 'Pago parcial considerable'),
 (50, 'TXN0050', 12000, 0, '2024-06-26 09:30:00', 'Debito_Automatico', 'REF-50048', 'Banco CL', 'App_Movil', 'usuario50', '192.168.0.50', 'Exitoso', 0, 'Último pago programado del mes');
+
+-- correcion de errores en pago_id -> numeros incorrectos al hacer mal el insert
+UPDATE historial_pagos SET pago_id = 13 WHERE cuota_id = 13;
+UPDATE historial_pagos SET pago_id = 14 WHERE cuota_id = 14;
+UPDATE historial_pagos SET pago_id = 15 WHERE cuota_id = 15;
+UPDATE historial_pagos SET pago_id = 16 WHERE cuota_id = 16;
+UPDATE historial_pagos SET pago_id = 17 WHERE cuota_id = 17;
+UPDATE historial_pagos SET pago_id = 18 WHERE cuota_id = 18;
+UPDATE historial_pagos SET pago_id = 19 WHERE cuota_id = 19;
+UPDATE historial_pagos SET pago_id = 20 WHERE cuota_id = 20;
+UPDATE historial_pagos SET pago_id = 21 WHERE cuota_id = 21;
+UPDATE historial_pagos SET pago_id = 22 WHERE cuota_id = 22;
+UPDATE historial_pagos SET pago_id = 23 WHERE cuota_id = 23;
+UPDATE historial_pagos SET pago_id = 24 WHERE cuota_id = 24;
+UPDATE historial_pagos SET pago_id = 25 WHERE cuota_id = 25;
+UPDATE historial_pagos SET pago_id = 26 WHERE cuota_id = 26;
+UPDATE historial_pagos SET pago_id = 27 WHERE cuota_id = 27;
+UPDATE historial_pagos SET pago_id = 28 WHERE cuota_id = 28;
+UPDATE historial_pagos SET pago_id = 29 WHERE cuota_id = 29;
+UPDATE historial_pagos SET pago_id = 30 WHERE cuota_id = 30;
+UPDATE historial_pagos SET pago_id = 31 WHERE cuota_id = 31;
+UPDATE historial_pagos SET pago_id = 32 WHERE cuota_id = 32;
+UPDATE historial_pagos SET pago_id = 33 WHERE cuota_id = 33;
+UPDATE historial_pagos SET pago_id = 34 WHERE cuota_id = 34;
+UPDATE historial_pagos SET pago_id = 35 WHERE cuota_id = 35;
+UPDATE historial_pagos SET pago_id = 36 WHERE cuota_id = 36;
+UPDATE historial_pagos SET pago_id = 37 WHERE cuota_id = 37;
+UPDATE historial_pagos SET pago_id = 38 WHERE cuota_id = 38;
+UPDATE historial_pagos SET pago_id = 39 WHERE cuota_id = 39;
+UPDATE historial_pagos SET pago_id = 40 WHERE cuota_id = 40;
+UPDATE historial_pagos SET pago_id = 41 WHERE cuota_id = 41;
+UPDATE historial_pagos SET pago_id = 42 WHERE cuota_id = 42;
+UPDATE historial_pagos SET pago_id = 43 WHERE cuota_id = 43;
+UPDATE historial_pagos SET pago_id = 44 WHERE cuota_id = 44;
+UPDATE historial_pagos SET pago_id = 45 WHERE cuota_id = 45;
+UPDATE historial_pagos SET pago_id = 46 WHERE cuota_id = 46;
+UPDATE historial_pagos SET pago_id = 47 WHERE cuota_id = 47;
+UPDATE historial_pagos SET pago_id = 48 WHERE cuota_id = 48;
+UPDATE historial_pagos SET pago_id = 49 WHERE cuota_id = 49;
+UPDATE historial_pagos SET pago_id = 50 WHERE cuota_id = 50;
