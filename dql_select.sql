@@ -58,8 +58,78 @@ LIMIT 5;
 SELECT cuota_id FROM cuotas_manejo WHERE tarjeta_id IN (1, 2) AND periodo_mes = 6 AND periodo_año = 2024;
 
 -- 11-20 Consultas - CONSULTAS DE TARJETAS Y TIPOS
+-- consulta 11: Mostrar todas las tarjetas activas con su número, tipo y fecha de apertura.
+SELECT tarjeta_id, numero_tarjeta, cliente_id, tipo_tarjeta_id, descuento_id, monto_apertura, limite_credito, saldo_disponible, fecha_apertura, fecha_vencimiento, fecha_ultimo_uso, pin_encriptado, intentos_fallidos, estado, motivo_bloqueo, observaciones, fecha_creacion, fecha_actualizacion
+FROM tarjetas
+WHERE estado = 'Activa';
 
+-- consulta 12: Contar cuántas tarjetas hay de cada tipo en el sistema.
+SELECT nombre_tipo AS 'Nombre de tarjeta', COUNT(tipo_tarjeta_id) AS 'Número de tarjetas' 
+FROM tarjetas AS t
+JOIN tipos_tarjeta AS tt USING (tipo_tarjeta_id)
+GROUP BY nombre_tipo
+ORDER BY nombre_tipo;
 
+-- consulta 13: Identificar tarjetas que vencen en los próximos 60 días.
+SELECT c.nombres AS 'Nombre del cliente', t.tarjeta_id AS 'ID de tarjeta', fecha_vencimiento AS 'Fecha de vencimiento'
+FROM tarjetas AS t
+JOIN clientes AS c USING (cliente_id)
+WHERE fecha_vencimiento BETWEEN CURDATE() AND ADDDATE(CURDATE(), INTERVAL 60 DAY);
+
+-- consulta 14: Mostrar todas las tarjetas bloqueadas con su motivo de bloqueo.
+SELECT tarjeta_id, motivo_bloqueo
+FROM tarjetas
+WHERE estado = 'Bloqueada';
+
+-- consulta 15: Calcular el porcentaje de utilización (saldo usado vs límite) para cada tarjeta.
+SELECT tarjeta_id, ((saldo_disponible/limite_credito)*100) AS 'Porcentaje de utilización'
+FROM tarjetas;
+
+-- consulta 16: Listar tarjetas con límite de crédito superior a $10,000,000.
+SELECT tarjeta_id, numero_tarjeta, cliente_id, tipo_tarjeta_id
+FROM tarjetas
+WHERE limite_credito > 10000000;
+
+-- consulta 17: Mostrar clientes que tienen más de 2 tarjetas activas.
+SELECT c.cliente_id, CONCAT(c.nombres, ' ', c.apellidos) AS 'Nombre_completo', SUM(t.tarjeta_id) AS 'Numero de tarjetas'
+FROM clientes AS c
+JOIN tarjetas AS t USING (cliente_id)
+WHERE t.estado = 'Activa'
+GROUP BY c.cliente_id, Nombre_completo
+HAVING SUM(t.tarjeta_id) > 2;
+
+-- consulta 18: Listar todos los tipos de tarjeta activos con sus características principales.
+SELECT
+    codigo_tipo AS 'Código',
+    nombre_tipo AS 'Nombre del Producto',
+    descripcion AS 'Descripción',
+    ingresos_minimos AS 'Ingresos Mínimos Requeridos',
+    monto_minimo_apertura AS 'Monto Mínimo de Apertura',
+    cuota_base_mensual AS 'Cuota Mensual',
+    tasa_interes AS 'Tasa de Interés (%)'
+FROM tipos_tarjeta
+WHERE estado = TRUE
+ORDER BY nombre_tipo;
+
+-- consulta 19: Mostrar tarjetas aperturadas en el último mes.
+SELECT t.numero_tarjeta AS 'Número de Tarjeta', t.fecha_apertura AS 'Fecha de Apertura', 
+    CONCAT(c.nombres, ' ', c.apellidos) AS 'Cliente', tt.nombre_tipo AS 'Tipo de Tarjeta'
+FROM tarjetas AS t
+JOIN clientes AS c ON t.cliente_id = c.cliente_id
+JOIN tipos_tarjeta AS tt ON t.tipo_tarjeta_id = tt.tipo_tarjeta_id
+WHERE t.fecha_apertura >= CURDATE() - INTERVAL 1 MONTH
+ORDER BY t.fecha_apertura DESC;
+
+-- consulta 20: Obtener el promedio, máximo y mínimo de límites de crédito por tipo de tarjeta.
+SELECT
+    tt.nombre_tipo AS 'Tipo de Tarjeta', COUNT(t.tarjeta_id) AS 'Cantidad de Tarjetas Activas',
+    ROUND(AVG(t.limite_credito), 2) AS 'Límite de Crédito Promedio', MAX(t.limite_credito) AS 'Límite de Crédito Máximo',
+    MIN(t.limite_credito) AS 'Límite de Crédito Mínimo'
+FROM tarjetas AS t
+JOIN tipos_tarjeta AS tt ON t.tipo_tarjeta_id = tt.tipo_tarjeta_id
+WHERE t.estado = 'Activa'
+GROUP BY tt.nombre_tipo
+ORDER BY tt.nombre_tipo;
 
 -- 21-30 consultas - CONSULTAS DE CUOTAS DE MANEJO
 -- 21a consulta: listar todas las cuotas generadas para el mes de junio de 2024
