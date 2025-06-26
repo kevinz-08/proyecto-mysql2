@@ -186,3 +186,171 @@ LIMIT 5;
 SELECT SUM(monto_total_con_mora) AS ingresos_proyectados
 FROM cuotas_manejo
 WHERE estado = 'Pendiente';
+
+-- 31-40 Consultas - CONSULTAS DE HISTORIAL DE PAGOS
+
+
+
+-- 41-50 Consultas - CONSULTAS DE TARJETAS CONSULTAS DE DESCUENTOS Y BENEFICIOS
+-- consulta 41: listar todos los niveles de descuento vigentes con sus caracteristicas
+SELECT *
+FROM niveles_descuento
+WHERE estado = '1';
+
+-- consulta 42: consultar el total de dinero descontado al usuario por cada nivel de tarjeta
+SELECT nd.nombre_descuento AS nivel_descuento, COUNT(cm.cuota_id) AS total_cuotas, SUM(cm.valor_descuento) AS total_valor_descontado
+FROM cuotas_manejo cm
+JOIN tarjetas t ON cm.tarjeta_id = t.tarjeta_id
+JOIN niveles_descuento nd ON t.descuento_id = nd.descuento_id
+GROUP BY nd.nombre_descuento ORDER BY total_valor_descontado DESC;
+
+-- consulta 43: contar cuanto clientes unicos han recibido un descuento
+SELECT COUNT(DISTINCT t.cliente_id) AS clientes_con_descuento
+FROM tarjetas t
+WHERE t.descuento_id IS NOT NULL;
+
+-- consutla 44: analizar que rango de descuento es mas utilizados
+SELECT nd.nombre_descuento, nd.porcentaje_descuento, COUNT(*) AS total_uso
+FROM tarjetas t
+JOIN niveles_descuento nd ON t.descuento_id = nd.descuento_id
+GROUP BY nd.nombre_descuento, nd.porcentaje_descuento
+ORDER BY total_uso DESC;
+
+-- consulta 45: comparar pagos de cuotas con descuento y sin descuento
+SELECT cm.porcentaje_descuento, COUNT(*) AS total_pagos, SUM(hp.monto_pagado) AS monto_total_pagado
+FROM historial_pagos hp
+JOIN cuotas_manejo cm ON hp.cuota_id = cm.cuota_id
+WHERE hp.estado_transaccion = 'Exitoso'
+GROUP BY cm.porcentaje_descuento
+ORDER BY cm.porcentaje_descuento;
+
+-- consulta 46: identificar descuentos que estan por expirar en 30 dias                 -- aqui todos los niveles de descuento tecnicamente no tienen fecha de vencimiento,
+select nd.nombre_descuento, nd.porcentaje_descuento, nd.fecha_inicio, nd.fecha_fin      -- pero igual hicimos la consulta
+from niveles_descuento nd
+where nd.fecha_fin <= DATE_ADD(CURDATE(), INTERVAL 30 DAY);
+
+-- consulta 47: encontrar el cliente que que mas ahorrado con los descuentos
+SELECT c.cliente_id, c.nombres, c.apellidos, SUM(cm.valor_descuento) AS total_ahorrado
+FROM cuotas_manejo cm
+JOIN tarjetas t ON cm.tarjeta_id = t.tarjeta_id
+JOIN clientes c ON t.cliente_id = c.cliente_id
+GROUP BY c.cliente_id
+ORDER BY total_ahorrado DESC
+LIMIT 1;
+
+-- consulta 48: calcular el impacto de descuentos en los ingresos totales
+SELECT
+  SUM(cm.monto_base) AS ingresos_brutos,
+  SUM(cm.monto_final) AS ingresos_netos,
+  SUM(cm.valor_descuento) AS total_descuento,
+  ROUND((SUM(cm.valor_descuento) / SUM(cm.monto_base)) * 100, 2) AS porcentaje_impacto_descuento
+FROM cuotas_manejo cm;
+
+-- consulta 49: identificar descuentos activos que no han sido aplicados
+SELECT nd.descuento_id, nd.nombre_descuento, nd.porcentaje_descuento, nd.estado       -- como tal todos los descuentos estan siendo aplicado en este momento
+FROM niveles_descuento nd                                                             -- entonces hacemos la consulta pero es normal que no se refleje nada
+LEFT JOIN tarjetas t ON nd.descuento_id = t.descuento_id
+WHERE t.descuento_id IS NULL AND nd.estado = TRUE;
+
+-- consulta 50: mostrar la tendencia de uso de descuentos por trimestre
+SELECT YEAR(cm.fecha_generacion) AS año, QUARTER(cm.fecha_generacion) AS trimestre, nd.nombre_descuento, COUNT(*) AS total_aplicaciones
+FROM cuotas_manejo cm
+JOIN tarjetas t ON cm.tarjeta_id = t.tarjeta_id
+JOIN niveles_descuento nd ON t.descuento_id = nd.descuento_id
+GROUP BY año, trimestre, nd.nombre_descuento
+ORDER BY año, trimestre, total_aplicaciones DESC;
+
+
+-- 51-60 Consultas - CONSULTAS DE REPORTES MENSUALES/ANUALES
+
+
+-- 61-70 Consultas - CONSULTAS DE MORA Y VENCIMIENTOS
+-- consulta 61: mostrar todas las cuotas vencidas con sus dias de mora
+SELECT cuota_id, tarjeta_id, periodo_mes, periodo_año, monto_final, fecha_vencimiento,
+  DATEDIFF(CURDATE(), fecha_vencimiento) AS dias_mora_calculados
+FROM cuotas_manejo
+WHERE estado = 'Vencida'
+  AND CURDATE() > fecha_vencimiento;
+
+-- consulta 62: agrupar cuotas vencidas por rango de dias
+SELECT 
+  CASE
+    WHEN DATEDIFF(CURDATE(), fecha_vencimiento) BETWEEN 1 AND 10 THEN '1-10 días'           -- en este caso todas son del 2024, por la consulta solo va a dar en que todas son mas de 60 dias
+    WHEN DATEDIFF(CURDATE(), fecha_vencimiento) BETWEEN 11 AND 30 THEN '11-30 días'         -- revisar la consulta de abajo, osea que la que esta despues de esta
+    WHEN DATEDIFF(CURDATE(), fecha_vencimiento) BETWEEN 31 AND 60 THEN '31-60 días'
+    ELSE 'Más de 60 días'
+  END AS rango_mora,
+  COUNT(*) AS total_cuotas
+FROM cuotas_manejo
+WHERE estado = 'Vencida'
+  AND CURDATE() > fecha_vencimiento
+GROUP BY rango_mora
+ORDER BY MIN(DATEDIFF(CURDATE(), fecha_vencimiento));
+-- consulta para ver el rango de dias de mora
+SELECT cuota_id, fecha_vencimiento, DATEDIFF(CURDATE(), fecha_vencimiento) AS dias_mora
+FROM cuotas_manejo
+WHERE estado = 'Vencida'
+ORDER BY fecha_vencimiento;
+
+-- consulta 63: calcular el total de interes generados por mora
+SELECT 
+  SUM(interes_mora) AS total_intereses_mora
+FROM cuotas_manejo
+WHERE interes_mora > 0;
+
+-- consulta 64: identificar clientes con cuotas vencidas hace mas de 200 dias
+SELECT c.cliente_id, c.nombres, c.apellidos, c.numero_documento, c.email, c.telefono, cm.cuota_id, cm.fecha_vencimiento,
+  DATEDIFF(CURDATE(), cm.fecha_vencimiento) AS dias_en_mora
+FROM cuotas_manejo cm
+JOIN tarjetas t ON cm.tarjeta_id = t.tarjeta_id
+JOIN clientes c ON t.cliente_id = c.cliente_id
+WHERE cm.estado = 'Vencida' AND DATEDIFF(CURDATE(), cm.fecha_vencimiento) > 90
+ORDER BY dias_en_mora DESC;
+
+-- consulta 65: analizar cuotas que salieron de mora
+SELECT cm.cuota_id, cm.tarjeta_id, cm.periodo_mes, cm.periodo_año, cm.monto_final, cm.fecha_vencimiento, cm.dias_mora, cm.estado, hp.fecha_pago, c.cliente_id, c.nombres, c.apellidos
+FROM cuotas_manejo cm
+JOIN historial_pagos hp ON cm.cuota_id = hp.cuota_id
+JOIN tarjetas t ON cm.tarjeta_id = t.tarjeta_id
+JOIN clientes c ON t.cliente_id = c.cliente_id
+WHERE cm.estado = 'Pagada' AND cm.dias_mora > 0 AND hp.estado_transaccion = 'Exitoso';
+
+-- consulta 66: mostrar la evolucion del porcentaje de mora por mes
+SELECT cm.periodo_año, cm.periodo_mes,
+  COUNT(*) AS total_cuotas,
+  SUM(CASE WHEN cm.estado = 'Vencida' THEN 1 ELSE 0 END) AS cuotas_vencidas,
+  ROUND((SUM(CASE WHEN cm.estado = 'Vencida' THEN 1 ELSE 0 END) / COUNT(*)) * 100,2) AS porcentaje_mora
+FROM cuotas_manejo cm
+GROUP BY cm.periodo_año, cm.periodo_mes
+ORDER BY cm.periodo_año, cm.periodo_mes;
+
+-- consulta 68: identificar cuotas prioritarias para gestion de cobro en el 2024
+SELECT cm.cuota_id, cm.tarjeta_id, cm.periodo_mes, cm.periodo_año, cm.monto_total_con_mora, cm.fecha_vencimiento,
+  DATEDIFF(CURDATE(), cm.fecha_vencimiento) AS dias_en_mora, c.cliente_id, c.nombres, c.apellidos, c.telefono, c.email
+FROM cuotas_manejo cm
+JOIN tarjetas t ON cm.tarjeta_id = t.tarjeta_id
+JOIN clientes c ON t.cliente_id = c.cliente_id
+WHERE cm.estado = 'Vencida' AND cm.periodo_año = 2024 AND DATEDIFF(CURDATE(), cm.fecha_vencimiento) > 60
+ORDER BY dias_en_mora DESC, cm.monto_total_con_mora DESC;
+
+-- consulta 69: mostrar el historial de mora por cliente
+SELECT c.cliente_id, c.nombres, c.apellidos, COUNT(cm.cuota_id) AS total_cuotas_con_mora,
+  SUM(CASE WHEN cm.estado = 'Vencida' THEN 1 ELSE 0 END) AS cuotas_vencidas,
+  SUM(CASE WHEN cm.estado = 'Pagada' AND cm.dias_mora > 0 THEN 1 ELSE 0 END) AS cuotas_pagadas_con_mora,
+  SUM(cm.dias_mora) AS total_dias_en_mora,
+  SUM(cm.interes_mora) AS total_intereses_mora
+FROM cuotas_manejo cm
+JOIN tarjetas t ON cm.tarjeta_id = t.tarjeta_id
+JOIN clientes c ON t.cliente_id = c.cliente_id
+WHERE cm.dias_mora > 0
+GROUP BY c.cliente_id, c.nombres, c.apellidos
+ORDER BY total_cuotas_con_mora DESC;
+
+-- consulta 70: identificar cuotas que podrian entrar en mora en el 2024
+SELECT cm.cuota_id, cm.tarjeta_id, cm.periodo_mes, cm.periodo_año, cm.monto_final, cm.fecha_vencimiento,
+  DATEDIFF(CURDATE(), cm.fecha_vencimiento) AS dias_sin_pago, c.cliente_id, c.nombres, c.apellidos, c.email
+FROM cuotas_manejo cm
+JOIN tarjetas t ON cm.tarjeta_id = t.tarjeta_id
+JOIN clientes c ON t.cliente_id = c.cliente_id
+WHERE cm.estado = 'Pendiente' AND cm.periodo_año = 2024 AND cm.fecha_vencimiento <= CURDATE()
+ORDER BY cm.fecha_vencimiento ASC;
