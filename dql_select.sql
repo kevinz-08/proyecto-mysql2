@@ -188,8 +188,97 @@ FROM cuotas_manejo
 WHERE estado = 'Pendiente';
 
 -- 31-40 Consultas - CONSULTAS DE HISTORIAL DE PAGOS
+-- consulta 31: Mostrar todos los pagos realizados en los últimos 15 días.
+SELECT
+    hp.numero_transaccion AS 'Número de Transacción', hp.fecha_pago AS 'Fecha del Pago',
+    hp.monto_pagado AS 'Monto', hp.metodo_pago AS 'Método', hp.estado_transaccion AS 'Estado',
+    t.numero_tarjeta AS 'Tarjeta Asociada'
+FROM historial_pagos AS hp
+JOIN cuotas_manejo AS cm ON hp.cuota_id = cm.cuota_id
+JOIN tarjetas AS t ON cm.tarjeta_id = t.tarjeta_id
+WHERE hp.fecha_pago >= CURDATE() - INTERVAL 15 DAY
+ORDER BY hp.fecha_pago DESC;
 
+-- consulta 32: Agrupar pagos por método de pago y mostrar el total recaudado por cada uno.
+SELECT metodo_pago AS 'Método de Pago', COUNT(pago_id) AS 'Cantidad de Transacciones', ROUND(SUM(monto_pagado), 2) AS 'Total Recaudado'
+FROM historial_pagos
+WHERE estado_transaccion = 'Exitoso'
+GROUP BY metodo_pago
+ORDER BY 'Total_Recaudado' DESC;
 
+-- consulta 33: Identificar transacciones con estado 'Fallido' del último mes.
+SELECT numero_transaccion AS 'Número de Transacción', fecha_pago AS 'Fecha del Intento', monto_pagado AS 'Monto',
+    metodo_pago AS 'Método', canal_pago AS 'Canal', banco_origen AS 'Banco Origen', observaciones AS 'Observaciones'
+FROM historial_pagos
+WHERE estado_transaccion = 'Fallido' AND fecha_pago >= CURDATE() - INTERVAL 1 MONTH
+ORDER BY fecha_pago DESC;
+
+-- consulta 34: Analizar qué canal de pago es más utilizado por los clientes.
+SELECT canal_pago AS 'Canal de Pago', COUNT(pago_id) AS 'Número de Usos', ROUND(SUM(monto_pagado), 2) AS 'Monto Total Procesado'
+FROM historial_pagos
+WHERE estado_transaccion = 'Exitoso'
+GROUP BY canal_pago
+ORDER BY 'Numero_de_Usos' DESC;
+
+-- consulta 35: Mostrar todo el historial de pagos de un cliente específico.
+SELECT CONCAT(c.nombres, ' ', c.apellidos) AS 'Cliente',
+    t.numero_tarjeta AS 'Número de Tarjeta',
+    hp.fecha_pago AS 'Fecha de Pago',
+    hp.monto_pagado AS 'Monto Pagado',
+    hp.metodo_pago AS 'Método',
+    hp.canal_pago AS 'Canal',
+    hp.estado_transaccion AS 'Estado del Pago'
+FROM historial_pagos AS hp
+JOIN cuotas_manejo AS cm ON hp.cuota_id = cm.cuota_id
+JOIN tarjetas AS t ON cm.tarjeta_id = t.tarjeta_id
+JOIN clientes AS c ON t.cliente_id = c.cliente_id
+WHERE c.cliente_id = 5
+ORDER BY hp.fecha_pago DESC;
+
+-- consulta 36: Listar pagos que generaron comisión
+SELECT numero_transaccion AS 'Número de Transacción', fecha_pago AS 'Fecha de Pago',
+    monto_pagado AS 'Monto del Pago', comision AS 'Comisión Cobrada'
+FROM historial_pagos
+WHERE comision > 0 AND estado_transaccion = 'Exitoso'
+ORDER BY fecha_pago DESC;
+
+-- consulta 37: Agrupar pagos por banco de origen cuando aplique.
+SELECT banco_origen AS 'Banco de Origen', COUNT(pago_id) AS 'Cantidad de Transacciones', ROUND(SUM(monto_pagado), 2) AS 'Monto Total Procesado'
+FROM historial_pagos
+WHERE banco_origen IS NOT NULL AND banco_origen != '' AND estado_transaccion = 'Exitoso'
+GROUP BY banco_origen
+ORDER BY 'Monto_Total_Procesado' DESC;
+
+-- consulta 38: Identificar cuotas que fueron pagadas en múltiples transacciones.
+SELECT hp.cuota_id AS 'ID de la Cuota', t.numero_tarjeta AS 'Número de Tarjeta', hp.numero_transaccion AS 'Número de Transacción',
+    hp.fecha_pago AS 'Fecha de Pago', hp.monto_pagado AS 'Monto del Pago Parcial'
+FROM historial_pagos AS hp
+JOIN cuotas_manejo AS cm ON hp.cuota_id = cm.cuota_id
+JOIN tarjetas AS t ON cm.tarjeta_id = t.tarjeta_id
+WHERE hp.cuota_id IN (
+        SELECT cuota_id
+        FROM historial_pagos
+        WHERE estado_transaccion = 'Exitoso'
+        GROUP BY cuota_id
+        HAVING COUNT(pago_id) > 1
+    )
+ORDER BY  hp.cuota_id, hp.fecha_pago;
+
+-- consulta 39: Mostrar el total recaudado por día en el último mes.
+SELECT DATE(fecha_pago) AS 'Día', COUNT(pago_id) AS 'Número de Pagos', ROUND(SUM(monto_pagado), 2) AS 'Total Recaudado'
+FROM historial_pagos
+WHERE estado_transaccion = 'Exitoso' AND fecha_pago >= CURDATE() - INTERVAL 1 MONTH
+GROUP BY Día
+ORDER BY Día ASC;
+
+-- consulta 40: Analizar qué usuarios del sistema registran más transacciones.
+SELECT usuario_registro AS 'Usuario del Sistema', COUNT(pago_id) AS 'Transacciones Registradas (Total)',
+    SUM(IF(estado_transaccion = 'Exitoso', 1, 0)) AS 'Transacciones Exitosas',
+    ROUND(SUM(IF(estado_transaccion = 'Exitoso', monto_pagado, 0)), 2) AS 'Monto Total Procesado Correctamente'
+FROM historial_pagos
+WHERE usuario_registro IS NOT NULL
+GROUP BY usuario_registro
+ORDER BY `Transacciones Registradas (Total)` DESC;
 
 -- 41-50 Consultas - CONSULTAS DE TARJETAS CONSULTAS DE DESCUENTOS Y BENEFICIOS
 -- consulta 41: listar todos los niveles de descuento vigentes con sus caracteristicas
@@ -260,8 +349,39 @@ JOIN niveles_descuento nd ON t.descuento_id = nd.descuento_id
 GROUP BY año, trimestre, nd.nombre_descuento
 ORDER BY año, trimestre, total_aplicaciones DESC;
 
-
 -- 51-60 Consultas - CONSULTAS DE REPORTES MENSUALES/ANUALES
+-- consulta 51: Calcular ingresos totales por cuotas de manejo por mes.
+SELECT YEAR(fecha_pago) AS 'Año', LPAD(MONTH(fecha_pago), 2, '0') AS 'Mes', DATE_FORMAT(fecha_pago, '%M') AS 'Nombre del Mes',
+    ROUND(SUM(monto_pagado), 2) AS 'Ingresos Totales'
+FROM historial_pagos
+WHERE estado_transaccion = 'Exitoso'
+GROUP BY Año, Mes, `Nombre del Mes`
+ORDER BY Año, Mes;
+
+-- consulta 52: Comparar ingresos del año actual vs año anterior por mes.
+SELECT reporte.mes_nombre, reporte.ingresos_anio_anterior, reporte.ingresos_anio_actual,
+    ROUND(
+        IF(
+            reporte.ingresos_anio_anterior > 0,
+            (reporte.ingresos_anio_actual - reporte.ingresos_anio_anterior) * 100.0 / reporte.ingresos_anio_anterior,
+            IF(reporte.ingresos_anio_actual > 0, 100.0, 0) -- Si antes era 0 y ahora hay ingresos, es 100% crecimiento.
+        ), 2
+    ) AS 'Crecimiento (%)'
+FROM (
+    SELECT
+        MONTH(fecha_pago) AS mes_numero,
+        DATE_FORMAT(fecha_pago, '%M') AS mes_nombre,
+        -- Suma condicional para el año anterior
+        SUM(IF(YEAR(fecha_pago) = YEAR(CURDATE()) - 1, monto_pagado, 0)) AS ingresos_anio_anterior,
+        -- Suma condicional para el año actual
+        SUM(IF(YEAR(fecha_pago) = YEAR(CURDATE()), monto_pagado, 0)) AS ingresos_anio_actual
+    FROM historial_pagos
+    WHERE estado_transaccion = 'Exitoso' AND YEAR(fecha_pago) IN (YEAR(CURDATE()), YEAR(CURDATE()) - 1)
+    GROUP BY mes_numero, mes_nombre
+) AS reporte
+ORDER BY reporte.mes_numero;
+
+-- consulta 53: Calcular el porcentaje de crecimiento mes a mes.
 
 
 -- 61-70 Consultas - CONSULTAS DE MORA Y VENCIMIENTOS
