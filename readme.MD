@@ -115,8 +115,8 @@ PROYECTO-MYSQL2/
 
 ## 👨‍💻 Autores del Proyecto
 
-**Kevin Santiago Gutiérrez Amorocho**  
-** Dylan Sneide Rueda Cardenas**
+**Kevin Santiago Gutiérrez Amorocho**
+**Dylan Sneider Rueda Cardenas**
 
 ---
 
