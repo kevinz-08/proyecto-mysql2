@@ -473,4 +473,4 @@ BEGIN
 END$$
 DELIMITER ;
 
-CALL sp_pagos_fallidos_por_fecha('2024-05-01', '2024-05-31');
+CALL sp_pagos_fallidos_por_fecha('2024-06-01', '2024-07-31');
