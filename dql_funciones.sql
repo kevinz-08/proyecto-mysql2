@@ -169,4 +169,199 @@ END$$
 
 DELIMITER ;
 
+-- FUNCIÓN 11: Obtener ingresos totales por un tipo de tarjeta específico.
+-- Basado en la consulta #91.
+DELIMITER $$
+DROP FUNCTION IF EXISTS f_ingresos_por_tipo_tarjeta;
+CREATE FUNCTION f_ingresos_por_tipo_tarjeta(p_tipo_tarjeta_id INT)
+RETURNS DECIMAL(15, 2)
+DETERMINISTIC
+BEGIN
+    DECLARE v_ingresos_totales DECIMAL(15, 2);
+    SELECT IFNULL(SUM(hp.monto_pagado), 0) INTO v_ingresos_totales
+    FROM historial_pagos AS hp
+    JOIN cuotas_manejo AS cm ON hp.cuota_id = cm.cuota_id
+    JOIN tarjetas AS t ON cm.tarjeta_id = t.tarjeta_id
+    WHERE t.tipo_tarjeta_id = p_tipo_tarjeta_id AND hp.estado_transaccion = 'Exitoso';
+    RETURN v_ingresos_totales;
+END$$
+DELIMITER ;
 
+SELECT nombre_tipo, f_ingresos_por_tipo_tarjeta(tipo_tarjeta_id) AS ingresos_totales FROM tipos_tarjeta;
+
+
+-- FUNCIÓN 12: Calcular la rentabilidad neta de un cliente.
+-- Basado en la consulta #72.
+DELIMITER $$
+DROP FUNCTION IF EXISTS f_rentabilidad_neta_cliente;
+CREATE FUNCTION f_rentabilidad_neta_cliente(p_cliente_id INT)
+RETURNS DECIMAL(15, 2)
+DETERMINISTIC
+BEGIN
+    DECLARE v_ingresos DECIMAL(15, 2);
+    DECLARE v_descuentos DECIMAL(15, 2);
+    SELECT IFNULL(SUM(hp.monto_pagado), 0) INTO v_ingresos
+    FROM historial_pagos hp JOIN cuotas_manejo cm ON hp.cuota_id = cm.cuota_id JOIN tarjetas t ON cm.tarjeta_id = t.tarjeta_id
+    WHERE t.cliente_id = p_cliente_id AND hp.estado_transaccion = 'Exitoso';
+    SELECT IFNULL(SUM(cm.valor_descuento), 0) INTO v_descuentos
+    FROM cuotas_manejo cm JOIN tarjetas t ON cm.tarjeta_id = t.tarjeta_id
+    WHERE t.cliente_id = p_cliente_id;
+    RETURN (v_ingresos - v_descuentos);
+END$$
+DELIMITER ;
+
+SELECT cliente_id, nombres, f_rentabilidad_neta_cliente(cliente_id) AS rentabilidad_neta FROM clientes LIMIT 5;
+
+
+-- FUNCIÓN 13: Contar el número de cuotas vencidas de un cliente.
+-- Basado en la consulta #94.
+DELIMITER $$
+DROP FUNCTION IF EXISTS f_contar_cuotas_vencidas_cliente;
+CREATE FUNCTION f_contar_cuotas_vencidas_cliente(p_cliente_id INT)
+RETURNS INT
+DETERMINISTIC
+BEGIN
+    DECLARE v_conteo INT;
+    SELECT COUNT(cm.cuota_id) INTO v_conteo
+    FROM cuotas_manejo cm JOIN tarjetas t ON cm.tarjeta_id = t.tarjeta_id
+    WHERE t.cliente_id = p_cliente_id AND cm.estado = 'Vencida';
+    RETURN v_conteo;
+END$$
+DELIMITER ;
+
+SELECT cliente_id, nombres, f_contar_cuotas_vencidas_cliente(cliente_id) AS numero_cuotas_vencidas FROM clientes LIMIT 10;
+
+
+-- FUNCIÓN 14: Obtener el total recaudado por un método de pago.
+-- Basado en la consulta #32.
+DELIMITER $$
+DROP FUNCTION IF EXISTS f_total_recaudado_por_metodo;
+CREATE FUNCTION f_total_recaudado_por_metodo(p_metodo_pago VARCHAR(50))
+RETURNS DECIMAL(15, 2)
+DETERMINISTIC
+BEGIN
+    DECLARE v_total_recaudado DECIMAL(15, 2);
+    SELECT IFNULL(SUM(monto_pagado), 0) INTO v_total_recaudado
+    FROM historial_pagos
+    WHERE metodo_pago = p_metodo_pago AND estado_transaccion = 'Exitoso';
+    RETURN v_total_recaudado;
+END$$
+DELIMITER ;
+
+SELECT 'PSE' AS metodo_pago, f_total_recaudado_por_metodo('PSE') AS total_recaudado;
+
+
+-- FUNCIÓN 15: Calcular el total de intereses por mora de un cliente.
+-- Basado en la consulta #99
+DELIMITER $$
+DROP FUNCTION IF EXISTS f_total_mora_por_cliente;
+CREATE FUNCTION f_total_mora_por_cliente(p_cliente_id INT)
+RETURNS DECIMAL(10, 2)
+DETERMINISTIC
+BEGIN
+    DECLARE v_total_mora DECIMAL(10, 2);
+    SELECT IFNULL(SUM(cm.interes_mora), 0) INTO v_total_mora
+    FROM cuotas_manejo cm JOIN tarjetas t ON cm.tarjeta_id = t.tarjeta_id
+    WHERE t.cliente_id = p_cliente_id;
+    RETURN v_total_mora;
+END$$
+DELIMITER ;
+
+SELECT cliente_id, nombres, f_total_mora_por_cliente(cliente_id) AS mora_acumulada FROM clientes WHERE cliente_id BETWEEN 1 AND 50;
+
+
+-- FUNCIÓN 16: Obtener ingresos totales para un mes y año específicos.
+-- Basado en la consulta #51.
+DELIMITER $$
+DROP FUNCTION IF EXISTS f_ingresos_por_mes_año;
+CREATE FUNCTION f_ingresos_por_mes_año(p_mes INT, p_año INT)
+RETURNS DECIMAL(15, 2)
+DETERMINISTIC
+BEGIN
+    DECLARE v_ingresos DECIMAL(15, 2);
+    SELECT IFNULL(SUM(monto_pagado), 0) INTO v_ingresos
+    FROM historial_pagos
+    WHERE MONTH(fecha_pago) = p_mes AND YEAR(fecha_pago) = p_año AND estado_transaccion = 'Exitoso';
+    RETURN v_ingresos;
+END$$
+DELIMITER ;
+
+SELECT f_ingresos_por_mes_año(5, 2024) AS 'Ingresos de Mayo 2024';
+
+
+-- FUNCIÓN 17: Contar cuántas tarjetas están asociadas a un descuento.
+-- Basado en la consulta #95
+DELIMITER $$
+DROP FUNCTION IF EXISTS f_contar_tarjetas_por_descuento;
+CREATE FUNCTION f_contar_tarjetas_por_descuento(p_descuento_id INT)
+RETURNS INT
+DETERMINISTIC
+BEGIN
+    DECLARE v_conteo INT;
+    SELECT COUNT(tarjeta_id) INTO v_conteo
+    FROM tarjetas
+    WHERE descuento_id = p_descuento_id;
+    RETURN v_conteo;
+END$$
+DELIMITER ;
+
+SELECT nombre_descuento, f_contar_tarjetas_por_descuento(descuento_id) AS tarjetas_asociadas FROM niveles_descuento;
+
+
+-- FUNCIÓN 18: Obtener la antigüedad de un cliente en años.
+-- Basado en la consulta #77.
+DELIMITER $$
+DROP FUNCTION IF EXISTS f_antiguedad_cliente_en_años;
+CREATE FUNCTION f_antiguedad_cliente_en_años(p_cliente_id INT)
+RETURNS INT
+DETERMINISTIC
+BEGIN
+    DECLARE v_fecha_registro DATE;
+    SELECT fecha_registro INTO v_fecha_registro FROM clientes WHERE cliente_id = p_cliente_id;
+    IF v_fecha_registro IS NULL THEN RETURN 0; END IF;
+    RETURN FLOOR(DATEDIFF(CURDATE(), v_fecha_registro) / 365);
+END$$
+DELIMITER ;
+
+SELECT cliente_id, nombres, f_antiguedad_cliente_en_años(cliente_id) AS años_como_cliente FROM clientes WHERE cliente_id = 7;
+
+
+-- FUNCIÓN 19: Verificar si un cliente es elegible para un beneficio (ej. 'cash back').
+-- Basado en la consulta #98
+DELIMITER $$
+DROP FUNCTION IF EXISTS f_cliente_tiene_beneficio;
+CREATE FUNCTION f_cliente_tiene_beneficio(p_cliente_id INT, p_beneficio_texto VARCHAR(100))
+RETURNS BOOLEAN
+DETERMINISTIC
+BEGIN
+    DECLARE v_conteo INT;
+    SELECT COUNT(*) INTO v_conteo
+    FROM tarjetas t JOIN tipos_tarjeta tt ON t.tipo_tarjeta_id = tt.tipo_tarjeta_id
+    WHERE t.cliente_id = p_cliente_id AND tt.beneficios LIKE CONCAT('%', p_beneficio_texto, '%');
+    RETURN v_conteo > 0;
+END$$
+DELIMITER ;
+
+SELECT nombres, apellidos, f_cliente_tiene_beneficio(cliente_id, 'cash back') AS tiene_cash_back FROM clientes WHERE cliente_id = 3;
+
+
+-- FUNCIÓN 20: Calcular el porcentaje de contribución de un cliente a los ingresos totales.
+-- Basado en la consulta #95.
+DELIMITER $$
+DROP FUNCTION IF EXISTS f_porcentaje_contribucion_cliente;
+CREATE FUNCTION f_porcentaje_contribucion_cliente(p_cliente_id INT)
+RETURNS DECIMAL(5, 2)
+DETERMINISTIC
+BEGIN
+    DECLARE v_ingresos_cliente DECIMAL(15, 2);
+    DECLARE v_ingresos_totales DECIMAL(15, 2);
+    SELECT IFNULL(SUM(hp.monto_pagado), 0) INTO v_ingresos_cliente
+    FROM historial_pagos hp JOIN cuotas_manejo cm ON hp.cuota_id = cm.cuota_id JOIN tarjetas t ON cm.tarjeta_id = t.tarjeta_id
+    WHERE t.cliente_id = p_cliente_id AND hp.estado_transaccion = 'Exitoso';
+    SELECT SUM(monto_pagado) INTO v_ingresos_totales FROM historial_pagos WHERE estado_transaccion = 'Exitoso';
+    IF v_ingresos_totales IS NULL OR v_ingresos_totales = 0 THEN RETURN 0; END IF;
+    RETURN (v_ingresos_cliente / v_ingresos_totales) * 100;
+END$$
+DELIMITER ;
+
+SELECT nombres, apellidos, CONCAT(ROUND(f_porcentaje_contribucion_cliente(cliente_id), 2), ' %') AS contribucion_a_ingresos FROM clientes WHERE cliente_id = 10;

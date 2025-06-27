@@ -235,3 +235,242 @@ END$$
 DELIMITER ;
 
 
+-- PROCEDIMIENTO 11: Obtener la vista completa de un cliente.
+-- Basado en la consulta #71. Recibe un ID de cliente y devuelve su historial completo.
+DELIMITER $$
+DROP PROCEDURE IF EXISTS sp_vista_completa_cliente;
+CREATE PROCEDURE sp_vista_completa_cliente(IN p_cliente_id INT)
+BEGIN
+    SELECT
+        c.cliente_id,
+        c.nombres,
+        c.apellidos,
+        t.numero_tarjeta,
+        t.estado AS estado_tarjeta,
+        cm.periodo_año AS año_cuota,
+        cm.periodo_mes AS mes_cuota,
+        cm.estado AS estado_cuota,
+        hp.fecha_pago,
+        hp.monto_pagado
+    FROM clientes AS c
+    LEFT JOIN tarjetas AS t ON c.cliente_id = t.cliente_id
+    LEFT JOIN cuotas_manejo AS cm ON t.tarjeta_id = cm.tarjeta_id
+    LEFT JOIN historial_pagos AS hp ON cm.cuota_id = hp.cuota_id
+    WHERE c.cliente_id = p_cliente_id
+    ORDER BY t.numero_tarjeta, año_cuota DESC, mes_cuota DESC;
+END$$
+DELIMITER ;
+
+CALL sp_vista_completa_cliente(10);
+
+
+-- PROCEDIMIENTO 12: Encontrar clientes con más de N tarjetas activas.
+-- Basado en la consulta #17. Hace el número de tarjetas un parámetro.
+DELIMITER $$
+DROP PROCEDURE IF EXISTS sp_clientes_con_multiples_tarjetas;
+CREATE PROCEDURE sp_clientes_con_multiples_tarjetas(IN p_num_tarjetas INT)
+BEGIN
+    SELECT
+        c.cliente_id,
+        c.nombres,
+        c.apellidos,
+        COUNT(t.tarjeta_id) AS numero_de_tarjetas_activas
+    FROM clientes AS c
+    JOIN tarjetas AS t ON c.cliente_id = t.cliente_id
+    WHERE t.estado = 'Activa'
+    GROUP BY c.cliente_id, c.nombres, c.apellidos
+    HAVING COUNT(t.tarjeta_id) > p_num_tarjetas;
+END$$
+DELIMITER ;
+-- Ejemplo (encontrar clientes con más de 1 tarjeta activa):
+CALL sp_clientes_con_multiples_tarjetas(1);
+
+
+-- PROCEDIMIENTO 13: Listar pagos en un rango de fechas.
+-- Basado en la consulta #31. Permite especificar fecha de inicio y fin.
+DELIMITER $$
+DROP PROCEDURE IF EXISTS sp_listar_pagos_por_fecha;
+CREATE PROCEDURE sp_listar_pagos_por_fecha(IN p_fecha_inicio DATE, IN p_fecha_fin DATE)
+BEGIN
+    SELECT
+        numero_transaccion,
+        fecha_pago,
+        monto_pagado,
+        metodo_pago,
+        estado_transaccion
+    FROM historial_pagos
+    WHERE DATE(fecha_pago) BETWEEN p_fecha_inicio AND p_fecha_fin
+    ORDER BY fecha_pago DESC;
+END$$
+DELIMITER ;
+
+CALL sp_listar_pagos_por_fecha('2024-06-01', '2024-07-31');
+
+
+-- PROCEDIMIENTO 14: Generar reporte de cuotas por estado y días de mora.
+-- Basado en consultas #61 y #62.
+DELIMITER $$
+DROP PROCEDURE IF EXISTS sp_reporte_cuotas_por_estado_y_mora;
+CREATE PROCEDURE sp_reporte_cuotas_por_estado_y_mora(IN p_estado ENUM('Pendiente', 'Pagada', 'Vencida', 'Condonada'), IN p_dias_mora INT)
+BEGIN
+    SELECT
+        cm.cuota_id,
+        t.numero_tarjeta,
+        c.nombres,
+        c.apellidos,
+        cm.monto_final,
+        cm.fecha_vencimiento,
+        cm.dias_mora
+    FROM cuotas_manejo cm
+    JOIN tarjetas t ON cm.tarjeta_id = t.tarjeta_id
+    JOIN clientes c ON t.cliente_id = c.cliente_id
+    WHERE cm.estado = p_estado AND cm.dias_mora >= p_dias_mora
+    ORDER BY cm.dias_mora DESC;
+END$$
+DELIMITER ;
+-- Ejemplo (ver cuotas vencidas con más de 30 días de mora):
+CALL sp_reporte_cuotas_por_estado_y_mora('Vencida', 30);
+
+
+-- PROCEDIMIENTO 15: Actualizar el estado de una tarjeta y auditar el cambio.Procedimiento 1de ACCIÓN que modifica datos y usa la tabla de auditoría.
+DELIMITER $$
+DROP PROCEDURE IF EXISTS sp_actualizar_estado_tarjeta;
+CREATE PROCEDURE sp_actualizar_estado_tarjeta(IN p_tarjeta_id INT, IN p_nuevo_estado VARCHAR(50), IN p_motivo VARCHAR(255), IN p_usuario VARCHAR(50))
+BEGIN
+    DECLARE v_estado_anterior VARCHAR(50);
+
+    -- Obtener el estado actual antes de la modificación
+    SELECT estado INTO v_estado_anterior FROM tarjetas WHERE tarjeta_id = p_tarjeta_id;
+
+    -- Realizar la actualización
+    UPDATE tarjetas
+    SET estado = p_nuevo_estado, motivo_bloqueo = p_motivo
+    WHERE tarjeta_id = p_tarjeta_id;
+
+    -- Insertar en la tabla de auditoría
+    INSERT INTO auditoria_operaciones (tabla_afectada, operacion, registro_id, datos_anteriores, datos_nuevos, usuario, descripcion)
+    VALUES (
+        'tarjetas',
+        'UPDATE',
+        p_tarjeta_id,
+        JSON_OBJECT('estado', v_estado_anterior),
+        JSON_OBJECT('estado', p_nuevo_estado, 'motivo', p_motivo),
+        p_usuario,
+        CONCAT('Cambio de estado manual de ', v_estado_anterior, ' a ', p_nuevo_estado)
+    );
+END$$
+DELIMITER ;
+
+CALL sp_actualizar_estado_tarjeta(5, 'Bloqueada', 'Petición del cliente vía telefónica', 'admcallcenter');
+
+
+-- PROCEDIMIENTO 16: Buscar clientes por nombre o documento.Procedimiento 1de BÚSQUEDA flexible.
+DELIMITER $$
+DROP PROCEDURE IF EXISTS sp_buscar_clientes;
+CREATE PROCEDURE sp_buscar_clientes(IN p_criterio VARCHAR(100))
+BEGIN
+    SELECT
+        cliente_id,
+        numero_documento,
+        nombres,
+        apellidos,
+        email,
+        telefono,
+        estado
+    FROM clientes
+    WHERE
+        nombres LIKE CONCAT('%', p_criterio, '%')
+        OR apellidos LIKE CONCAT('%', p_criterio, '%')
+        OR numero_documento = p_criterio
+    LIMIT 50;
+END$$
+DELIMITER ;
+
+CALL sp_buscar_clientes('Perez');
+
+
+-- PROCEDIMIENTO 17: Obtener el historial de pagos de un cliente.
+-- Basado en la consulta #35.
+DELIMITER $$
+DROP PROCEDURE IF EXISTS sp_historial_pagos_cliente;
+CREATE PROCEDURE sp_historial_pagos_cliente(IN p_cliente_id INT)
+BEGIN
+    SELECT
+        t.numero_tarjeta,
+        hp.fecha_pago,
+        hp.monto_pagado,
+        hp.metodo_pago,
+        hp.canal_pago,
+        hp.estado_transaccion
+    FROM historial_pagos AS hp
+    JOIN cuotas_manejo AS cm ON hp.cuota_id = cm.cuota_id
+    JOIN tarjetas AS t ON cm.tarjeta_id = t.tarjeta_id
+    WHERE t.cliente_id = p_cliente_id
+    ORDER BY hp.fecha_pago DESC;
+END$$
+DELIMITER ;
+
+CALL sp_historial_pagos_cliente(8);
+
+
+-- PROCEDIMIENTO 18: Reporte de emisión de tarjetas por mes y año.
+-- Basado en la consulta #56, pero parametrizado.
+DELIMITER $$
+DROP PROCEDURE IF EXISTS sp_reporte_emision_tarjetas_periodo;
+CREATE PROCEDURE sp_reporte_emision_tarjetas_periodo(IN p_año INT, IN p_mes INT)
+BEGIN
+    SELECT
+        tt.nombre_tipo,
+        COUNT(t.tarjeta_id) AS 'Tarjetas Emitidas'
+    FROM tarjetas t
+    JOIN tipos_tarjeta tt ON t.tipo_tarjeta_id = tt.tipo_tarjeta_id
+    WHERE YEAR(t.fecha_apertura) = p_año AND MONTH(t.fecha_apertura) = p_mes
+    GROUP BY tt.nombre_tipo
+    ORDER BY `Tarjetas Emitidas` DESC;
+END$$
+DELIMITER ;
+-- Ejemplo (reporte para Junio de 2024):
+CALL sp_reporte_emision_tarjetas_periodo(2024, 6);
+
+
+-- PROCEDIMIENTO 19: Ranking de descuentos más utilizados.
+-- Basado en la consulta #95
+DELIMITER $$
+DROP PROCEDURE IF EXISTS sp_ranking_descuentos;
+CREATE PROCEDURE sp_ranking_descuentos()
+BEGIN
+    SELECT
+        nd.nombre_descuento,
+        nd.porcentaje_descuento,
+        COUNT(t.tarjeta_id) AS 'Numero de Tarjetas con este Descuento'
+    FROM niveles_descuento AS nd
+    JOIN tarjetas AS t ON nd.descuento_id = t.descuento_id
+    GROUP BY nd.descuento_id
+    ORDER BY `Numero de Tarjetas con este Descuento` DESC;
+END$$
+DELIMITER ;
+
+CALL sp_ranking_descuentos();
+
+
+-- PROCEDIMIENTO 20: Obtener pagos fallidos en un rango de fechas.
+-- Basado en la consulta #33.
+DELIMITER $$
+DROP PROCEDURE IF EXISTS sp_pagos_fallidos_por_fecha;
+CREATE PROCEDURE sp_pagos_fallidos_por_fecha(IN p_fecha_inicio DATE, IN p_fecha_fin DATE)
+BEGIN
+    SELECT
+        numero_transaccion,
+        fecha_pago,
+        monto_pagado,
+        metodo_pago,
+        canal_pago,
+        observaciones
+    FROM historial_pagos
+    WHERE estado_transaccion = 'Fallido'
+      AND DATE(fecha_pago) BETWEEN p_fecha_inicio AND p_fecha_fin
+    ORDER BY fecha_pago DESC;
+END$$
+DELIMITER ;
+
+CALL sp_pagos_fallidos_por_fecha('2024-06-01', '2024-07-31');
