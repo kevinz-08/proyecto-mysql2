@@ -359,11 +359,11 @@ GROUP BY Año, Mes, `Nombre del Mes`
 ORDER BY Año, Mes;
 
 -- consulta 52: Comparar ingresos del año actual vs año anterior por mes.
-SELECT reporte.mes_nombre, reporte.ingresos_anio_anterior, reporte.ingresos_anio_actual,
+SELECT reporte.mes_nombre, reporte.ingresos_año_anterior, reporte.ingresos_anio_actual,
     ROUND(
         IF(
-            reporte.ingresos_anio_anterior > 0,
-            (reporte.ingresos_anio_actual - reporte.ingresos_anio_anterior) * 100.0 / reporte.ingresos_anio_anterior,
+            reporte.ingresos_año_anterior > 0,
+            (reporte.ingresos_anio_actual - reporte.ingresos_año_anterior) * 100.0 / reporte.ingresos_año_anterior,
             IF(reporte.ingresos_anio_actual > 0, 100.0, 0) -- Si antes era 0 y ahora hay ingresos, es 100% crecimiento.
         ), 2
     ) AS 'Crecimiento (%)'
@@ -371,9 +371,7 @@ FROM (
     SELECT
         MONTH(fecha_pago) AS mes_numero,
         DATE_FORMAT(fecha_pago, '%M') AS mes_nombre,
-        -- Suma condicional para el año anterior
-        SUM(IF(YEAR(fecha_pago) = YEAR(CURDATE()) - 1, monto_pagado, 0)) AS ingresos_anio_anterior,
-        -- Suma condicional para el año actual
+        SUM(IF(YEAR(fecha_pago) = YEAR(CURDATE()) - 1, monto_pagado, 0)) AS ingresos_año_anterior,
         SUM(IF(YEAR(fecha_pago) = YEAR(CURDATE()), monto_pagado, 0)) AS ingresos_anio_actual
     FROM historial_pagos
     WHERE estado_transaccion = 'Exitoso' AND YEAR(fecha_pago) IN (YEAR(CURDATE()), YEAR(CURDATE()) - 1)
@@ -382,7 +380,142 @@ FROM (
 ORDER BY reporte.mes_numero;
 
 -- consulta 53: Calcular el porcentaje de crecimiento mes a mes.
+-- Consulta difícil, comentarios para mayor facilidad
+-- Usamos una CTE para modularizar y hacer más legible la consulta.
+WITH IngresosMensuales AS (
+    -- Reporte de ingresos por mes
+    SELECT
+        YEAR(fecha_pago) AS año,
+        MONTH(fecha_pago) AS mes,
+        SUM(monto_pagado) AS ingresos_actuales
+    FROM
+        historial_pagos
+    WHERE
+        estado_transaccion = 'Exitoso'
+    GROUP BY
+        año, mes
+)
+-- Cálculo de rendimiento sobre tabla virtual
+SELECT
+    año,
+    mes,
+    ROUND(ingresos_actuales, 2) AS 'Ingresos del Mes',
+    -- LAG() para obtener el ingreso del mes previo
+    ROUND(LAG(ingresos_actuales, 1, 0) OVER (ORDER BY año, mes), 2) AS 'Ingresos Mes Anterior',
+    -- Calculamos el % de crecimiento, manejando el caso de que el mes anterior sea 0.
+    ROUND(
+        IF(LAG(ingresos_actuales, 1, 0) OVER (ORDER BY año, mes) > 0,
+            (ingresos_actuales - LAG(ingresos_actuales, 1, 0) OVER (ORDER BY año, mes)) * 100.0
+            / LAG(ingresos_actuales, 1, 0) OVER (ORDER BY año, mes),
+            IF(ingresos_actuales > 0, 100.0, 0)), 2
+    ) AS 'Crecimiento Mes a Mes (%)'
+FROM IngresosMensuales
+ORDER BY año, mes;
 
+-- consulta 54: Identificar los meses con mayor y menor recaudación.
+SELECT DATE_FORMAT(fecha_pago, '%M') AS nombre_del_mes, ROUND(SUM(monto_pagado), 2) AS recaudacion_historica_total
+FROM historial_pagos
+WHERE estado_transaccion = 'Exitoso'
+GROUP BY MONTH(fecha_pago), nombre_del_mes
+ORDER BY recaudacion_historica_total DESC;
+
+-- consulta 55: Contar clientes nuevos registrados por mes.
+SELECT YEAR(fecha_registro) AS 'Año',
+    MONTH(fecha_registro) AS 'Mes',
+    DATE_FORMAT(fecha_registro, '%M') AS 'Nombre del Mes',
+    COUNT(cliente_id) AS 'Cantidad de Clientes Nuevos'
+FROM clientes
+GROUP BY Año, Mes, `Nombre del Mes`
+ORDER BY  Año, Mes;
+
+-- consulta 56: Analizar cuántas tarjetas se emiten mensualmente.
+SELECT
+  YEAR(t.fecha_apertura) AS 'Año',
+  MONTH(t.fecha_apertura) AS 'Mes',
+  SUM(IF(tt.nombre_tipo = 'Clásica', 1, 0)) AS 'Emitidas Clásica',
+  SUM(IF(tt.nombre_tipo = 'Oro', 1, 0)) AS 'Emitidas Oro',
+  SUM(IF(tt.nombre_tipo = 'Platino', 1, 0)) AS 'Emitidas Platino',
+  SUM(IF(tt.nombre_tipo = 'Black', 1, 0)) AS 'Emitidas Black',
+  COUNT(t.tarjeta_id) AS 'Total Emitidas'
+FROM tarjetas AS t
+JOIN tipos_tarjeta AS tt ON t.tipo_tarjeta_id = tt.tipo_tarjeta_id
+GROUP BY Año, Mes
+ORDER BY Año, Mes;
+
+-- consulta 57: Calcular el porcentaje de cuotas pagadas vs generadas por mes.
+SELECT
+  periodo_año AS 'Año de Generación',
+  periodo_mes AS 'Mes de Generación',
+  COUNT(cuota_id) AS 'Total Cuotas Generadas',
+  SUM(IF(estado = 'Pagada', 1, 0)) AS 'Cuotas Pagadas',
+  ROUND(
+      (SUM(IF(estado = 'Pagada', 1, 0)) / COUNT(cuota_id)) * 100,
+      2
+  ) AS 'Efectividad de Cobro (%)'
+FROM cuotas_manejo
+GROUP BY `Año de Generación`, `Mes de Generación`
+ORDER BY  `Año de Generación`, `Mes de Generación`;
+
+-- consulta 58: Mostrar la evolución de la cartera vencida mes a mes.
+SELECT periodo_año AS 'Año', periodo_mes AS 'Mes',
+  ROUND(SUM(monto_final), 2) AS 'Monto Total Generado',
+  ROUND(SUM(IF(estado = 'Vencida', monto_final, 0)), 2) AS 'Monto en Mora',
+  ROUND(SUM(IF(estado = 'Pagada', monto_final, 0)), 2) AS 'Monto Pagado',
+  ROUND(SUM(IF(estado = 'Pendiente', monto_final, 0)), 2) AS 'Monto Pendiente'
+FROM cuotas_manejo
+GROUP BY Año, Mes
+ORDER BY Año, Mes;
+
+-- consulta 59: Crear un dashboard con las métricas principales mensuales.
+-- Consulta difícil, comentarios para facilidad
+WITH
+-- CTE 1: Ingresos mensuales (basado en fecha de pago)
+Ingresos AS (
+    SELECT YEAR(fecha_pago) AS año, MONTH(fecha_pago) AS mes, SUM(monto_pagado) AS total_ingresos
+    FROM historial_pagos WHERE estado_transaccion = 'Exitoso' GROUP BY año, mes
+),
+-- CTE 2: Nuevos clientes por mes (basado en fecha de registro)
+NuevosClientes AS (
+    SELECT YEAR(fecha_registro) AS año, MONTH(fecha_registro) AS mes, COUNT(cliente_id) AS total_nuevos_clientes
+    FROM clientes GROUP BY año, mes
+),
+-- CTE 3: Tarjetas emitidas por mes (basado en fecha de apertura)
+TarjetasNuevas AS (
+    SELECT YEAR(fecha_apertura) AS año, MONTH(fecha_apertura) AS mes, COUNT(tarjeta_id) AS total_tarjetas_nuevas
+    FROM tarjetas GROUP BY año, mes
+),
+-- CTE Maestra: Lista de todos los períodos únicos para no perder datos
+Periodos AS (
+    SELECT año, mes FROM Ingresos
+    UNION
+    SELECT año, mes FROM NuevosClientes
+    UNION
+    SELECT año, mes FROM TarjetasNuevas
+)
+-- Consulta final que une todo
+SELECT
+    p.año,
+    p.mes,
+    IFNULL(ROUND(i.total_ingresos, 2), 0) AS 'Ingresos Totales',
+    IFNULL(nc.total_nuevos_clientes, 0) AS 'Nuevos Clientes',
+    IFNULL(tn.total_tarjetas_nuevas, 0) AS 'Tarjetas Emitidas'
+FROM Periodos p
+LEFT JOIN Ingresos       i  ON p.año = i.año AND p.mes = i.mes
+LEFT JOIN NuevosClientes nc ON p.año = nc.año AND p.mes = nc.mes
+LEFT JOIN TarjetasNuevas tn ON p.año = tn.año AND p.mes = tn.mes
+ORDER BY p.año, p.mes;
+
+-- consulta 60: Calcular proyecciones de ingresos basadas en tendencias históricas.
+WITH IngresosMensuales AS (
+    SELECT YEAR(fecha_pago) AS año, MONTH(fecha_pago) AS mes, SUM(monto_pagado) AS ingresos_totales
+    FROM historial_pagos
+    WHERE estado_transaccion = 'Exitoso'
+    GROUP BY año, mes
+)
+SELECT año, mes, ROUND(ingresos_totales, 2) AS 'Ingresos Reales del Mes',
+    ROUND(AVG(ingresos_totales) OVER (ORDER BY año, mes ROWS BETWEEN 2 PRECEDING AND CURRENT ROW), 2) AS 'Promedio Móvil de 3 Meses'
+FROM IngresosMensuales
+ORDER BY año, mes;
 
 -- 61-70 Consultas - CONSULTAS DE MORA Y VENCIMIENTOS
 -- consulta 61: mostrar todas las cuotas vencidas con sus dias de mora
@@ -474,3 +607,4 @@ JOIN tarjetas t ON cm.tarjeta_id = t.tarjeta_id
 JOIN clientes c ON t.cliente_id = c.cliente_id
 WHERE cm.estado = 'Pendiente' AND cm.periodo_año = 2024 AND cm.fecha_vencimiento <= CURDATE()
 ORDER BY cm.fecha_vencimiento ASC;
+
