@@ -240,6 +240,37 @@ INSERT INTO historial_pagos (cuota_id, numero_transaccion, monto_pagado, monto_p
 (49, 'TXN0049', 40000, 6700, '2024-07-01 14:00:00', 'PSE', 'REF-49047', 'Davivienda', 'Online', 'usuario49', '192.168.0.49', 'Exitoso', 0, 'Pago parcial considerable'),
 (50, 'TXN0050', 12000, 0, '2024-06-26 09:30:00', 'Debito_Automatico', 'REF-50048', 'Banco CL', 'App_Movil', 'usuario50', '192.168.0.50', 'Exitoso', 0, 'Último pago programado del mes');
 
+-- roles de usuarios
+-- admin
+CREATE USER 'admin'@'localhost' IDENTIFIED BY 'admin123';
+GRANT ALL PRIVILEGES ON banco_cl.* TO 'admin'@'localhost';
+
+-- operador de pagos
+CREATE USER 'operador_pagos'@'localhost' IDENTIFIED BY 'pago456';
+GRANT SELECT, INSERT, UPDATE ON banco_cl.historial_pagos TO 'operador_pagos'@'localhost';
+GRANT SELECT, INSERT, UPDATE ON banco_cl.cuotas_manejo TO 'operador_pagos'@'localhost';
+
+-- gerente
+CREATE USER 'gerente'@'localhost' IDENTIFIED BY 'gerente789';
+GRANT SELECT ON banco_cl.cuotas_manejo TO 'gerente'@'localhost';
+GRANT SELECT ON banco_cl.historial_pagos TO 'gerente'@'localhost';
+GRANT SELECT ON banco_cl.tarjetas TO 'gerente'@'localhost';
+GRANT SELECT ON banco_cl.clientes TO 'gerente'@'localhost';
+GRANT SELECT ON banco_cl.tipos_tarjeta TO 'gerente'@'localhost';
+GRANT SELECT ON banco_cl.niveles_descuento TO 'gerente'@'localhost';
+
+-- consultor de tarjetas
+CREATE USER 'consultor_tarjetas'@'localhost' IDENTIFIED BY 'consulta101';
+GRANT SELECT ON banco_cl.tarjetas TO 'consultor_tarjetas'@'localhost';
+GRANT SELECT ON banco_cl.cuotas_manejo TO 'consultor_tarjetas'@'localhost';
+GRANT SELECT ON banco_cl.tipos_tarjeta TO 'consultor_tarjetas'@'localhost';
+GRANT SELECT ON banco_cl.niveles_descuento TO 'consultor_tarjetas'@'localhost';
+
+-- auditor
+CREATE USER 'auditor'@'localhost' IDENTIFIED BY 'auditor202';
+GRANT SELECT ON banco_cl.* TO 'auditor'@'localhost';
+
+
 -- Inserccion de datos
 -- 1. Tipos de tarjeta
 INSERT INTO Tipos_Tarjeta (codigo_tipo, nombre_tipo, descripcion, edad_minima, edad_maxima, ingresos_minimos, monto_minimo_apertura, monto_maximo_apertura, cuota_base_mensual, tasa_interes, beneficios) VALUES
