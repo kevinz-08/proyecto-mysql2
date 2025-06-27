@@ -893,8 +893,103 @@ ORDER BY puntaje_lealtad_inferido DESC;
 
 
 -- 81-90: consultas avanzadas en general
+-- consulta 81: listar los clientes que han pagado todas sus cuotas sin mora
+SELECT c.cliente_id, c.nombres, c.apellidos, c.numero_documento, c.email, COUNT(cm.cuota_id) AS total_cuotas_pagadas
+FROM cuotas_manejo cm
+    JOIN tarjetas t ON cm.tarjeta_id = t.tarjeta_id
+    JOIN clientes c ON t.cliente_id = c.cliente_id
+WHERE cm.estado = 'Pagada'
+GROUP BY c.cliente_id, c.nombres, c.apellidos, c.numero_documento, c.email
+HAVING MAX(cm.dias_mora) = 0
+ORDER BY total_cuotas_pagadas DESC;
 
+-- consulta 82: mostrar por cliente cuanto ha pagado en total de cuotas
+SELECT c.cliente_id, c.nombres, c.apellidos, SUM(cm.monto_final) AS total_pagado
+FROM cuotas_manejo cm
+    JOIN tarjetas t ON cm.tarjeta_id = t.tarjeta_id
+    JOIN clientes c ON t.cliente_id = c.cliente_id
+WHERE cm.estado = 'Pagada'
+GROUP BY c.cliente_id, c.nombres, c.apellidos
+ORDER BY total_pagado DESC;
 
+-- consulta 83: mostrar cuotas que tengan un descuento superior al promedio de todos los descuentos
+SELECT cm.cuota_id, cm.tarjeta_id, cm.periodo_mes, cm.periodo_año, cm.monto_final, cm.fecha_vencimiento, cm.dias_mora, cm.interes_mora, cm.estado
+FROM cuotas_manejo cm
+WHERE cm.porcentaje_descuento > (SELECT AVG(porcentaje_descuento) FROM cuotas_manejo)
+
+-- consulta 84: ver clientes cuya ultima cuota pagada tenia dias de mora > 0
+SELECT c.cliente_id, c.nombres, c.apellidos, cm.cuota_id, cm.dias_mora, MAX(hp.fecha_pago) AS ultima_fecha_pago
+FROM historial_pagos hp
+JOIN cuotas_manejo cm ON hp.cuota_id = cm.cuota_id
+JOIN tarjetas t ON cm.tarjeta_id = t.tarjeta_id
+JOIN clientes c ON t.cliente_id = c.cliente_id
+WHERE hp.estado_transaccion = 'Exitoso' AND cm.dias_mora > 0
+GROUP BY c.cliente_id, c.nombres, c.apellidos, cm.cuota_id, cm.dias_mora
+ORDER BY ultima_fecha_pago DESC;
+
+-- consulta 85: mostrar la suma total pagada en mora agrupada por ciudad de los clientes
+SELECT c.ciudad, SUM(hp.monto_pagado) AS total_pagado_en_mora
+FROM historial_pagos hp
+JOIN cuotas_manejo cm ON hp.cuota_id = cm.cuota_id
+JOIN tarjetas t ON cm.tarjeta_id = t.tarjeta_id
+JOIN clientes c ON t.cliente_id = c.cliente_id
+WHERE hp.estado_transaccion = 'Exitoso' AND cm.dias_mora > 0
+GROUP BY c.ciudad
+ORDER BY total_pagado_en_mora DESC;
+
+-- consulta 86: mostrar cual es el metodo de pago mas utilizado por cada ciudad
+SELECT hp.metodo_pago, c.ciudad, COUNT(*) AS total_usos
+FROM historial_pagos hp
+JOIN cuotas_manejo cm ON hp.cuota_id = cm.cuota_id
+JOIN tarjetas t ON cm.tarjeta_id = t.tarjeta_id
+JOIN clientes c ON t.cliente_id = c.cliente_id
+GROUP BY c.ciudad, hp.metodo_pago
+HAVING COUNT(*) = (
+    SELECT COUNT(*) 
+    FROM historial_pagos hp2
+    JOIN cuotas_manejo cm2 ON hp2.cuota_id = cm2.cuota_id
+    JOIN tarjetas t2 ON cm2.tarjeta_id = t2.tarjeta_id
+    JOIN clientes c2 ON t2.cliente_id = c2.cliente_id
+    WHERE c2.ciudad = c.ciudad
+    GROUP BY hp2.metodo_pago
+    ORDER BY COUNT(*) DESC
+    LIMIT 1
+);
+
+-- consulta 87: contar cuantos pagos se han hecho por cada tarjeta y mostrar las 5 con los montos mas altos en pagos
+SELECT t.tarjeta_id,t.numero_tarjeta, COUNT(hp.pago_id) AS cantidad_pagos, SUM(hp.monto_pagado) AS total_pagado
+FROM historial_pagos hp
+JOIN cuotas_manejo cm ON hp.cuota_id = cm.cuota_id
+JOIN tarjetas t ON cm.tarjeta_id = t.tarjeta_id
+WHERE hp.estado_transaccion = 'Exitoso'
+GROUP BY t.tarjeta_id, t.numero_tarjeta
+ORDER BY total_pagado DESC
+LIMIT 5;
+
+-- consulta 88: mostrar el promedio de días de mora según el tipo de tarjeta
+SELECT tt.nombre_tipo AS tipo_tarjeta, ROUND(AVG(cm.dias_mora), 2) AS promedio_dias_mora
+FROM cuotas_manejo cm
+JOIN tarjetas t ON cm.tarjeta_id = t.tarjeta_id
+JOIN tipos_tarjeta tt ON t.tipo_tarjeta_id = tt.tipo_tarjeta_id
+GROUP BY tt.nombre_tipo
+ORDER BY promedio_dias_mora DESC;
+
+-- consulta 89: listar clientes que nunca han tenido días de mora > 0 en ninguna cuota
+SELECT c.cliente_id, c.nombres, c.apellidos, c.numero_documento, c.email
+FROM cuotas_manejo cm
+JOIN tarjetas t ON cm.tarjeta_id = t.tarjeta_id
+JOIN clientes c ON t.cliente_id = c.cliente_id
+GROUP BY c.cliente_id, c.nombres, c.apellidos, c.numero_documento, c.email
+HAVING MAX(cm.dias_mora) = 0
+ORDER BY c.nombres;
+
+-- consulta 90: identificar el mes con mayor tasa de mora 
+SELECT periodo_año, periodo_mes, COUNT(*) AS total_cuotas, SUM(estado = 'Vencida') AS cuotas_vencidas,
+  ROUND(SUM(estado = 'Vencida') / COUNT(*) * 100, 2) AS porcentaje_mora
+FROM cuotas_manejo
+GROUP BY periodo_año, periodo_mes
+ORDER BY porcentaje_mora DESC
+LIMIT 1;
 
 -- 91-100 Consultas
 -- consulta 91: Agrupar el total de monto_pagado por tipo_tarjeta (Visa Gold, Nómina, etc.).
