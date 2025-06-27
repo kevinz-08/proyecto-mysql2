@@ -1,4 +1,3 @@
-```markdown
 # 💳 BancoCL - Sistema de Gestión de Cuotas y Pagos
 
 > Proyecto de MySQL que simula el sistema de un banco real para administrar clientes, tarjetas, cuotas de manejo y pagos, con procedimientos almacenados y triggers inteligentes.
