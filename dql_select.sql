@@ -608,3 +608,10 @@ JOIN clientes c ON t.cliente_id = c.cliente_id
 WHERE cm.estado = 'Pendiente' AND cm.periodo_año = 2024 AND cm.fecha_vencimiento <= CURDATE()
 ORDER BY cm.fecha_vencimiento ASC;
 
+
+
+-- 71-80 Consultas: CONSULTAS AVANZADAS CON JOINS
+
+
+
+-- 81-90: consultas avanzadas en general
