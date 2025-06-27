@@ -124,7 +124,6 @@ PROYECTO-MYSQL2/
 
 ✅ Finalizado y 100% funcional  
 🧩 Escalable: puede integrarse con backends en Python, PHP o Node.js  
-🧪 Validado con pruebas de integridad y automatización
 
 ---
 
