@@ -611,7 +611,382 @@ ORDER BY cm.fecha_vencimiento ASC;
 
 
 -- 71-80 Consultas: CONSULTAS AVANZADAS CON JOINS
+-- consulta 71: Crear una consulta que muestre cliente, sus tarjetas, cuotas y pagos.
+SELECT c.cliente_id, c.nombres, c.apellidos, c.email,
+  -- Datos de la tarjeta
+  t.numero_tarjeta, t.estado AS estado_tarjeta, t.limite_credito,
+  -- Datos de la cuota
+  cm.periodo_año AS año_cuota, cm.periodo_mes AS mes_cuota, cm.monto_final AS monto_cuota, cm.estado AS estado_cuota,
+  -- Datos del pago
+  hp.fecha_pago, hp.monto_pagado, hp.metodo_pago
+FROM clientes AS c
+LEFT JOIN tarjetas AS t ON c.cliente_id = t.cliente_id
+LEFT JOIN cuotas_manejo AS cm ON t.tarjeta_id = cm.tarjeta_id
+LEFT JOIN historial_pagos AS hp ON cm.cuota_id = hp.cuota_id
+-- ¡Recuerda cambiar este ID por el del cliente que quieres consultar!
+WHERE c.cliente_id = 10
+ORDER BY t.numero_tarjeta,
+  año_cuota DESC,
+  mes_cuota DESC,
+  hp.fecha_pago DESC;
+
+-- consulta 72: Calcular ingresos netos por cliente considerando descuentos.
+WITH
+-- 1. Calculamos los ingresos brutos por cliente (dinero real pagado).
+IngresosPorCliente AS (
+  SELECT c.cliente_id, SUM(hp.monto_pagado) AS ingresos_brutos
+  FROM clientes c
+  JOIN tarjetas t ON c.cliente_id = t.cliente_id
+  JOIN cuotas_manejo cm ON t.tarjeta_id = cm.tarjeta_id
+  JOIN historial_pagos hp ON cm.cuota_id = hp.cuota_id
+  WHERE hp.estado_transaccion = 'Exitoso'
+  GROUP BY c.cliente_id
+),
+-- 2. Calculamos el total de descuentos otorgados a cada cliente.
+DescuentosPorCliente AS (
+  SELECT c.cliente_id, SUM(cm.valor_descuento) AS total_descuentos
+  FROM clientes c
+  JOIN tarjetas t ON c.cliente_id = t.cliente_id
+  JOIN cuotas_manejo cm ON t.tarjeta_id = cm.tarjeta_id
+  GROUP BY c.cliente_id
+)
+-- 3. Unimos todo para el reporte final.
+SELECT c.cliente_id, c.nombres, c.apellidos,
+  IFNULL(ip.ingresos_brutos, 0) AS ingresos_totales,
+  IFNULL(dp.total_descuentos, 0) AS descuentos_totales,
+  (IFNULL(ip.ingresos_brutos, 0) - IFNULL(dp.total_descuentos, 0)) AS rentabilidad_neta
+FROM clientes c
+LEFT JOIN IngresosPorCliente   ip ON c.cliente_id = ip.cliente_id
+LEFT JOIN DescuentosPorCliente dp ON c.cliente_id = dp.cliente_id
+ORDER BY rentabilidad_neta DESC;
+
+-- consulta 73: Clasificar clientes por comportamiento de pago y uso de productos.
+WITH MetricasClientes AS (
+    SELECT c.cliente_id, c.fecha_registro, c.ultimo_acceso,
+      COUNT(DISTINCT t.tarjeta_id) AS num_tarjetas,
+      IFNULL(MAX(cm.dias_mora), 0) AS max_dias_mora,
+      SUM(IF(cm.estado = 'Vencida', 1, 0)) AS total_cuotas_vencidas
+    FROM clientes c
+    LEFT JOIN tarjetas t ON c.cliente_id = t.cliente_id
+    LEFT JOIN cuotas_manejo cm ON t.tarjeta_id = cm.tarjeta_id
+    GROUP BY c.cliente_id, c.fecha_registro, c.ultimo_acceso
+)
+SELECT c.cliente_id, c.nombres, c.apellidos,
+  -- El CASE evalúa las condiciones en orden y se detiene en la primera que es verdadera.
+  CASE
+      WHEN mc.total_cuotas_vencidas > 2 OR mc.max_dias_mora > 90 THEN 'Moroso Crónico'
+      WHEN mc.ultimo_acceso < CURDATE() - INTERVAL 6 MONTH THEN 'En Riesgo (Inactivo)'
+      WHEN c.fecha_registro >= CURDATE() - INTERVAL 3 MONTH THEN 'Cliente Nuevo'
+      WHEN mc.num_tarjetas > 2 AND mc.total_cuotas_vencidas = 0 THEN 'Cliente VIP Fiel'
+      WHEN mc.total_cuotas_vencidas = 0 AND mc.num_tarjetas > 0 THEN 'Pagador Puntual'
+      ELSE 'Cliente Estándar'
+  END AS segmento_cliente
+FROM
+    clientes c
+JOIN
+    MetricasClientes mc ON c.cliente_id = mc.cliente_id
+ORDER BY
+    segmento_cliente;
+
+-- consulta 74: Identificar clientes aptos para productos adicionales.
+SELECT DISTINCT c.cliente_id, c.nombres, c.apellidos, c.ingresos_mensuales, 'Ofrecer Tarjeta Oro' AS oportunidad_cross_selling
+FROM clientes AS c
+-- Nos aseguramos que tenga al menos una tarjeta activa
+JOIN tarjetas AS t ON c.cliente_id = t.cliente_id AND t.estado = 'Activa'
+WHERE
+  c.ingresos_mensuales >= 2500000.00
+  AND c.estado = 'Activo'
+  AND NOT EXISTS (
+      SELECT 1
+      FROM tarjetas t2
+      WHERE t2.cliente_id = c.cliente_id AND t2.tipo_tarjeta_id >= 2
+  )
+  -- Regla 4: Verificamos que NO EXISTA una cuota vencida para este cliente.
+  AND NOT EXISTS (
+      SELECT 1
+      FROM cuotas_manejo cm3
+      JOIN tarjetas t3 ON cm3.tarjeta_id = t3.tarjeta_id
+      WHERE t3.cliente_id = c.cliente_id AND cm3.estado = 'Vencida'
+  );
+
+-- consulta 75: Mostrar la evolución completa de un cliente desde su registro.
+-- Evento 1: Registro del Cliente
+(SELECT
+    fecha_registro AS fecha_evento,
+    '1. Registro de Cliente' AS tipo_evento,
+    CONCAT('El cliente ', nombres, ' ', apellidos, ' se unió a la entidad.') AS descripcion
+FROM clientes WHERE cliente_id = 10)
+
+UNION ALL
+
+-- Evento 2: Apertura de Tarjetas
+(SELECT
+    t.fecha_apertura,
+    '2. Apertura de Tarjeta',
+    CONCAT('Abrió la tarjeta ', tt.nombre_tipo, ' No. ', t.numero_tarjeta)
+FROM tarjetas t
+JOIN tipos_tarjeta tt ON t.tipo_tarjeta_id = tt.tipo_tarjeta_id
+WHERE t.cliente_id = 10)
+
+UNION ALL
+
+-- Evento 3: Generación de Cuotas de Manejo
+(SELECT
+    cm.fecha_generacion,
+    '3. Generación de Cuota',
+    CONCAT('Se generó cuota de ', cm.monto_final, ' para tarjeta ', t.numero_tarjeta)
+FROM cuotas_manejo cm
+JOIN tarjetas t ON cm.tarjeta_id = t.tarjeta_id
+WHERE t.cliente_id = 10)
+
+UNION ALL
+
+-- Evento 4: Pagos Realizados Exitosamente
+(SELECT
+    hp.fecha_pago,
+    '4. Pago Realizado',
+    CONCAT('Realizó un pago exitoso de ', hp.monto_pagado, ' con ', hp.metodo_pago)
+FROM historial_pagos hp
+JOIN cuotas_manejo cm ON hp.cuota_id = cm.cuota_id
+JOIN tarjetas t ON cm.tarjeta_id = t.tarjeta_id
+WHERE t.cliente_id = 10 AND hp.estado_transaccion = 'Exitoso')
+
+UNION ALL
+
+-- Evento 5: Último Acceso al Sistema (si existe)
+(SELECT
+    ultimo_acceso,
+    '5. Acceso al Sistema',
+    'El cliente inició sesión en una plataforma digital.'
+FROM clientes
+WHERE cliente_id = 10 AND ultimo_acceso IS NOT NULL)
+
+-- Ordenamos toda la bitácora unificada por fecha y luego por el tipo de evento.
+ORDER BY fecha_evento ASC, tipo_evento ASC;
+
+-- consulta 76: Analizar el rendimiento de cada tipo de tarjeta.
+WITH
+-- CTE para métricas a nivel de tarjeta (cuántas hay y cuánto cupo suman)
+MetricasPorTarjeta AS (
+  SELECT t.tipo_tarjeta_id,
+    COUNT(t.tarjeta_id) AS cantidad_tarjetas_activas,
+    SUM(t.limite_credito) AS suma_limites_credito
+  FROM tarjetas t
+  WHERE t.estado = 'Activa'
+  GROUP BY t.tipo_tarjeta_id
+),
+-- CTE para métricas a nivel de cuota (ingresos y mora)
+MetricasPorCuota AS (
+  SELECT t.tipo_tarjeta_id,
+    SUM(IF(cm.estado = 'Pagada', cm.monto_final, 0)) AS ingresos_por_cuotas,
+    AVG(IF(cm.estado = 'Vencida', cm.dias_mora, NULL)) AS promedio_dias_mora,
+    SUM(IF(cm.estado = 'Vencida', 1, 0)) AS total_cuotas_vencidas
+  FROM tarjetas t
+  JOIN cuotas_manejo cm ON t.tarjeta_id = cm.tarjeta_id
+  GROUP BY t.tipo_tarjeta_id
+)
+-- Unimos todo para el reporte final
+SELECT
+  tt.nombre_tipo AS 'Tipo de Tarjeta',
+  IFNULL(mt.cantidad_tarjetas_activas, 0) AS 'Num. Tarjetas Activas',
+  IFNULL(mt.suma_limites_credito, 0) AS 'Cupo Total Asignado',
+  IFNULL(mc.ingresos_por_cuotas, 0) AS 'Ingresos por Cuotas',
+  IFNULL(mc.total_cuotas_vencidas, 0) AS 'Cuotas en Mora',
+  IFNULL(ROUND(mc.promedio_dias_mora, 1), 0) AS 'Promedio Días Mora (Vencidas)'
+FROM tipos_tarjeta tt
+LEFT JOIN MetricasPorTarjeta mt ON tt.tipo_tarjeta_id = mt.tipo_tarjeta_id
+LEFT JOIN MetricasPorCuota mc ON tt.tipo_tarjeta_id = mc.tipo_tarjeta_id
+WHERE tt.estado = TRUE
+ORDER BY `Num. Tarjetas Activas` DESC;
+
+-- consulta 77: Identificar clientes de mayor valor y antigüedad.
+WITH
+ValorCliente AS (
+  SELECT c.cliente_id, (SUM(IFNULL(hp.monto_pagado, 0)) - SUM(IFNULL(cm.valor_descuento,0))) AS rentabilidad_neta
+  FROM clientes c
+  LEFT JOIN tarjetas t ON c.cliente_id = t.cliente_id
+  LEFT JOIN cuotas_manejo cm ON t.tarjeta_id = cm.tarjeta_id
+  LEFT JOIN historial_pagos hp ON cm.cuota_id = hp.cuota_id AND hp.estado_transaccion = 'Exitoso'
+  GROUP BY c.cliente_id
+)
+-- Consulta final que combina valor y antigüedad
+SELECT c.cliente_id, c.nombres, c.apellidos, c.fecha_registro,
+  -- DATEDIFF calcula la diferencia en días entre dos fechas.
+  DATEDIFF(CURDATE(), c.fecha_registro) AS dias_como_cliente,
+  -- FLOOR() redondea hacia abajo para obtener los años completos.
+  FLOOR(DATEDIFF(CURDATE(), c.fecha_registro) / 365) AS años_como_cliente,
+  IFNULL(vc.rentabilidad_neta, 0) AS valor_neto_cliente
+FROM clientes c
+LEFT JOIN  ValorCliente vc ON c.cliente_id = vc.cliente_id
+WHERE c.estado = 'Activo'
+-- Ordenamos por el valor y luego por la antigüedad.
+ORDER BY dias_como_cliente DESC
+LIMIT 50;
+
+-- consulta 78: Evaluar el riesgo de cada cliente basado en su historial.
+WITH
+MetricasRiesgo AS (
+  SELECT c.cliente_id,
+    SUM(IF(hp.estado_transaccion = 'Fallido', 1, 0)) AS num_pagos_fallidos,
+    SUM(IF(cm.estado = 'Vencida', 1, 0)) AS num_cuotas_vencidas,
+    IFNULL(MAX(cm.dias_mora), 0) AS max_dias_mora,
+    SUM(t.intentos_fallidos) AS total_intentos_pin_fallidos
+  FROM clientes c
+  LEFT JOIN tarjetas t ON c.cliente_id = t.cliente_id
+  LEFT JOIN cuotas_manejo cm ON t.tarjeta_id = cm.tarjeta_id
+  LEFT JOIN historial_pagos hp ON cm.cuota_id = hp.cuota_id
+  GROUP BY c.cliente_id
+)
+SELECT c.cliente_id, c.nombres, c.apellidos, mr.num_cuotas_vencidas, mr.max_dias_mora,
+    -- El CASE asigna una categoría basada en el impacto de las métricas de riesgo.
+    CASE
+        WHEN mr.max_dias_mora > 90 OR mr.num_cuotas_vencidas > 3 THEN 'Muy Alto'
+        WHEN mr.max_dias_mora > 30 OR mr.num_cuotas_vencidas > 1 THEN 'Alto'
+        WHEN mr.num_pagos_fallidos > 5 OR mr.max_dias_mora > 0 THEN 'Medio'
+        ELSE 'Bajo'
+    END AS nivel_de_riesgo
+FROM clientes c
+JOIN MetricasRiesgo mr ON c.cliente_id = mr.cliente_id
+-- La función FIELD nos permite ordenar por un orden personalizado.
+ORDER BY FIELD(nivel_de_riesgo, 'Muy Alto', 'Alto', 'Medio', 'Bajo'), mr.max_dias_mora DESC;
+
+-- consulta 79: Medir tiempos promedio de procesamiento de operaciones.
+SELECT canal_pago, COUNT(pago_id) AS numero_de_pagos,
+  -- Calculamos el tiempo promedio en segundos y minutos para una mejor interpretación.
+  ROUND(AVG(TIMESTAMPDIFF(SECOND, fecha_pago, fecha_procesamiento)), 2) AS 'tiempo_promedio_procesamiento_seg',
+  ROUND(AVG(TIMESTAMPDIFF(MINUTE, fecha_pago, fecha_procesamiento)), 2) AS 'tiempo_promedio_procesamiento_min'
+FROM historial_pagos
+WHERE estado_transaccion = 'Exitoso'
+    -- ambas fechas existan para poder calcular la diferencia.
+    AND fecha_procesamiento IS NOT NULL AND fecha_pago IS NOT NULL
+GROUP BY canal_pago
+ORDER BY tiempo_promedio_procesamiento_seg DESC;
+
+-- consulta 80: Correlacionar datos de uso con indicadores de satisfacción.
+WITH
+MetricasSatisfaccion AS (
+  SELECT c.cliente_id,
+    DATEDIFF(CURDATE(), c.fecha_registro) AS dias_antiguedad,
+    SUM(IF(t.estado = 'Activa', 1, 0)) AS num_tarjetas_activas,
+    SUM(IF(t.estado = 'Cancelada', 1, 0)) AS num_tarjetas_canceladas,
+    COUNT(hp.pago_id) AS total_transacciones_exitosas,
+    IFNULL(AVG(cm.dias_mora), 0) AS promedio_dias_mora
+  FROM clientes c
+  LEFT JOIN tarjetas t ON c.cliente_id = t.cliente_id
+  LEFT JOIN cuotas_manejo cm ON t.tarjeta_id = cm.tarjeta_id
+  LEFT JOIN historial_pagos hp ON cm.cuota_id = hp.cuota_id AND hp.estado_transaccion = 'Exitoso'
+  GROUP BY c.cliente_id, c.fecha_registro
+)
+SELECT c.cliente_id, c.nombres, c.apellidos,
+    -- Creamos un puntaje ponderado. Los valores son ejemplos.
+    (
+        (ms.dias_antiguedad / 365 * 5)  -- +5 puntos por cada año como cliente
+        + (ms.num_tarjetas_activas * 10) -- +10 puntos por cada tarjeta activa
+        - (ms.num_tarjetas_canceladas * 20) -- -20 puntos por cada tarjeta cancelada
+        - (ms.promedio_dias_mora * 2)  -- -2 puntos por cada día de mora promedio
+        + (ms.total_transacciones_exitosas * 1) -- +1 punto por cada pago exitoso
+    ) AS puntaje_lealtad_inferido
+FROM clientes c
+JOIN MetricasSatisfaccion ms ON c.cliente_id = ms.cliente_id
+ORDER BY puntaje_lealtad_inferido DESC;
 
 
 
 -- 81-90: consultas avanzadas en general
+
+
+
+-- 91-100 Consultas
+-- consulta 91: Agrupar el total de monto_pagado por tipo_tarjeta (Visa Gold, Nómina, etc.).
+SELECT tt.nombre_tipo AS 'Tipo de Tarjeta', ROUND(SUM(hp.monto_pagado), 2) AS 'Ingresos Totales'
+FROM historial_pagos AS hp
+JOIN cuotas_manejo AS cm ON hp.cuota_id = cm.cuota_id
+JOIN tarjetas AS t ON cm.tarjeta_id = t.tarjeta_id
+JOIN tipos_tarjeta AS tt ON t.tipo_tarjeta_id = tt.tipo_tarjeta_id
+WHERE hp.estado_transaccion = 'Exitoso'
+GROUP BY tt.nombre_tipo
+ORDER BY `Ingresos Totales` DESC;
+
+-- consulta 92: Mostrar clientes cuyas tarjetas tienen montos de apertura superiores al promedio general.
+SELECT c.nombres, c.apellidos, t.numero_tarjeta, t.monto_apertura
+FROM clientes AS c
+JOIN tarjetas AS t ON c.cliente_id = t.cliente_id
+-- Comparamos el monto de apertura de cada tarjeta con el resultado de la subconsulta.
+WHERE t.monto_apertura > (
+        SELECT AVG(monto_apertura) FROM tarjetas
+    )
+ORDER BY t.monto_apertura DESC;
+
+-- consulta 93: Listar tarjetas ordenadas por fecha_ultimo_uso descendente.
+SELECT t.numero_tarjeta, t.fecha_ultimo_uso, CONCAT(c.nombres, ' ', c.apellidos) AS 'Nombre del Cliente', t.estado
+FROM tarjetas AS t
+JOIN clientes AS c ON t.cliente_id = c.cliente_id
+-- Nos aseguramos de que la tarjeta tenga una fecha de último uso.
+WHERE t.fecha_ultimo_uso IS NOT NULL
+ORDER BY t.fecha_ultimo_uso DESC;
+
+-- consulta 94: Identificar clientes que estén acumulando mora de forma reciente.
+SELECT c.cliente_id, c.nombres, c.apellidos, COUNT(cm.cuota_id) AS 'Cuotas Vencidas Recientes'
+FROM clientes AS c
+JOIN tarjetas AS t ON c.cliente_id = t.cliente_id
+JOIN cuotas_manejo AS cm ON t.tarjeta_id = cm.tarjeta_id
+WHERE cm.estado = 'Vencida'
+    -- Filtramos para cuotas cuyo vencimiento fue en el período reciente.
+    AND cm.fecha_vencimiento >= CURDATE() - INTERVAL 3 MONTH
+GROUP BY c.cliente_id, c.nombres, c.apellidos
+HAVING COUNT(cm.cuota_id) > 2
+ORDER BY `Cuotas Vencidas Recientes` DESC;
+
+-- consulta 95: Contar cuántas tarjetas han usado cada tipo de descuento y mostrarlas ordenadas.
+SELECT nd.nombre_descuento, nd.porcentaje_descuento, COUNT(t.tarjeta_id) AS 'Numero de Tarjetas con este Descuento'
+FROM niveles_descuento AS nd
+JOIN tarjetas AS t ON nd.descuento_id = t.descuento_id
+GROUP BY nd.descuento_id, nd.nombre_descuento, nd.porcentaje_descuento
+ORDER BY `Numero de Tarjetas con este Descuento` DESC;
+
+-- consulta 96: Mostrar el promedio de ingresos_mensuales de clientes con tipo_tarjeta que contiene ‘Visa’.
+SELECT ROUND(AVG(ingresos_mensuales), 2) AS 'Promedio de Ingresos de Clientes con Tarjeta Visa'
+FROM clientes
+WHERE
+    cliente_id IN (
+        -- Subconsulta que obtiene los IDs de todos los clientes que tienen una tarjeta 'Visa'.
+        SELECT DISTINCT t.cliente_id
+        FROM tarjetas AS t
+        JOIN tipos_tarjeta AS tt ON t.tipo_tarjeta_id = tt.tipo_tarjeta_id
+        WHERE tt.nombre_tipo LIKE '%Visa%'
+    );
+
+-- consulta 97: Ver clientes que han usado diferentes canales (app, online, corresponsal, etc.).
+SELECT c.cliente_id, c.nombres, c.apellidos, COUNT(DISTINCT hp.canal_pago) AS 'Cantidad de Canales Usados'
+FROM clientes AS c
+JOIN tarjetas AS t ON c.cliente_id = t.cliente_id
+JOIN cuotas_manejo AS cm ON t.tarjeta_id = cm.tarjeta_id
+JOIN historial_pagos AS hp ON cm.cuota_id = hp.cuota_id
+WHERE hp.estado_transaccion = 'Exitoso'
+GROUP BY c.cliente_id, c.nombres, c.apellidos
+HAVING COUNT(DISTINCT hp.canal_pago) > 1
+ORDER BY `Cantidad de Canales Usados` DESC;
+
+-- consulta 98: Buscar clientes cuyas tarjetas incluyen cierto texto en el campo beneficios (por ejemplo: 'cash back').
+SELECT DISTINCT c.cliente_id, c.nombres, c.apellidos, tt.nombre_tipo
+FROM clientes AS c
+JOIN tarjetas AS t ON c.cliente_id = t.cliente_id
+JOIN tipos_tarjeta AS tt ON t.tipo_tarjeta_id = tt.tipo_tarjeta_id
+WHERE tt.beneficios LIKE '%cash back%';
+
+-- consulta 99: Mostrar cuánto ha acumulado en interes_mora cada cliente.
+SELECT c.cliente_id, c.nombres, c.apellidos, ROUND(SUM(cm.interes_mora), 2) AS 'Total Intereses por Mora Acumulados'
+FROM clientes AS c
+JOIN tarjetas AS t ON c.cliente_id = t.cliente_id
+JOIN cuotas_manejo AS cm ON t.tarjeta_id = cm.tarjeta_id
+GROUP BY c.cliente_id, c.nombres, c.apellidos
+HAVING SUM(cm.interes_mora) > 0
+ORDER BY `Total Intereses por Mora Acumulados` DESC;
+
+-- consulta 100: Identificar pagos que se realizaron el mismo día en que la cuota fue generada.
+SELECT hp.numero_transaccion, hp.monto_pagado, DATE(cm.fecha_generacion) AS 'Fecha de Generación', DATE(hp.fecha_pago) AS 'Fecha de Pago', t.numero_tarjeta
+FROM historial_pagos AS hp
+JOIN cuotas_manejo AS cm ON hp.cuota_id = cm.cuota_id
+JOIN tarjetas AS t ON cm.tarjeta_id = t.tarjeta_id
+WHERE DATE(hp.fecha_pago) = DATE(cm.fecha_generacion) AND hp.estado_transaccion = 'Exitoso'
+ORDER BY hp.fecha_pago DESC;
