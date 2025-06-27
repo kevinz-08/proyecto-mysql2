@@ -153,5 +153,20 @@ END$$
 
 DELIMITER ;
 
+-- 10ma funcion: obtener dias de mora de una cuota
+DELIMITER $$
+
+CREATE FUNCTION dias_mora_cuota(cuota_id INT)
+RETURNS INT
+DETERMINISTIC
+BEGIN
+  DECLARE dias INT;
+  SELECT dias_mora INTO dias
+  FROM cuotas_manejo
+  WHERE cuota_id = cuota_id;
+  RETURN IFNULL(dias, 0);
+END$$
+
+DELIMITER ;
 
 
