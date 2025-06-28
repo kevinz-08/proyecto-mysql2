@@ -154,3 +154,75 @@ BEGIN
     CALL sp_pagos_fallidos_por_fecha('2024-06-01', '2024-07-31');
 END$$
 DELIMITER ;
+
+-- EVENTO 11: generar cuotas automaticamente el primer dia de cada mes
+CREATE EVENT IF NOT EXISTS generar_cuotas_mensuales
+ON SCHEDULE EVERY 1 MONTH
+STARTS '2024-07-01 00:00:00'
+DO
+CALL registrar_cuotas_mensuales();
+
+-- EVENTO 12: calcular interes por mora cada dia 
+CREATE EVENT IF NOT EXISTS calcular_interes_mora_diario
+ON SCHEDULE EVERY 1 DAY
+DO
+CALL actualizar_intereses_por_mora();
+
+-- EVENTO 13: cerrar descuentos expirados (en este caso este evento no tendria un fin como tal ya que los descuentos no tiene una fecha de expiracion definida)
+CREATE EVENT IF NOT EXISTS expirar_descuentos
+ON SCHEDULE EVERY 1 DAY
+DO
+UPDATE niveles_descuento
+SET estado = FALSE
+WHERE fecha_fin IS NOT NULL AND fecha_fin < CURDATE();
+
+-- EVENTO 14: actualizar dias de mora de cuotas vencidas
+CREATE EVENT IF NOT EXISTS expirar_descuentos
+ON SCHEDULE EVERY 1 DAY
+DO
+UPDATE niveles_descuento
+SET estado = FALSE
+WHERE fecha_fin IS NOT NULL AND fecha_fin < CURDATE();
+
+-- EVENTO 15: marcar cuotas como vencidas si pasan sus fechas y no se pagan
+CREATE EVENT IF NOT EXISTS marcar_cuotas_vencidas
+ON SCHEDULE EVERY 1 DAY
+DO
+UPDATE cuotas_manejo
+SET estado = 'Vencida'
+WHERE estado = 'Pendiente' AND fecha_vencimiento < CURDATE();
+
+-- EVENTO 16: notificar cuotas con mas de 200 dias de mora 
+CREATE EVENT IF NOT EXISTS registrar_alertas_mora_larga
+ON SCHEDULE EVERY 1 DAY
+DO
+INSERT INTO auditoria_operaciones (tabla_afectada, operacion, registro_id, datos_nuevos, usuario, descripcion)
+SELECT 'cuotas_manejo', 'ALERTA', cuota_id, NULL, 'sistema', CONCAT('Cuota con mora prolongada: ', dias_mora, ' días')
+FROM cuotas_manejo
+WHERE dias_mora > 60;
+
+-- EVENTO 17: recalcular montos con mora para cuotas vencidas
+CREATE EVENT IF NOT EXISTS recalcular_montos_mora
+ON SCHEDULE EVERY 1 DAY
+DO
+UPDATE cuotas_manejo
+SET monto_total_con_mora = monto_final + interes_mora
+WHERE estado = 'Vencida';
+
+-- EVENTO 18: depurar cuotas condonadas con mas de 2 años
+CREATE EVENT IF NOT EXISTS eliminar_cuotas_condonadas_antiguas
+ON SCHEDULE EVERY 1 MONTH
+DO
+DELETE FROM cuotas_manejo
+WHERE estado = 'Condonada' AND fecha_generacion < (CURDATE() - INTERVAL 2 YEAR);
+
+-- EVENTO 19: registro de uso de descuentos aplicados
+CREATE EVENT IF NOT EXISTS log_descuentos_aplicados
+ON SCHEDULE EVERY 1 MONTH
+DO
+INSERT INTO auditoria_operaciones (tabla_afectada, operacion, registro_id, datos_nuevos, usuario, descripcion)
+SELECT 'cuotas_manejo', 'REPORTE', cuota_id, JSON_OBJECT('porcentaje_descuento', porcentaje_descuento), 'sistema', 'Descuento aplicado mensual'
+FROM cuotas_manejo
+WHERE porcentaje_descuento > 0
+  AND MONTH(fecha_generacion) = MONTH(CURDATE() - INTERVAL 1 MONTH)
+  AND YEAR(fecha_generacion) = YEAR(CURDATE() - INTERVAL 1 MONTH);

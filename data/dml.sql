@@ -240,6 +240,42 @@ INSERT INTO historial_pagos (cuota_id, numero_transaccion, monto_pagado, monto_p
 (49, 'TXN0049', 40000, 6700, '2024-07-01 14:00:00', 'PSE', 'REF-49047', 'Davivienda', 'Online', 'usuario49', '192.168.0.49', 'Exitoso', 0, 'Pago parcial considerable'),
 (50, 'TXN0050', 12000, 0, '2024-06-26 09:30:00', 'Debito_Automatico', 'REF-50048', 'Banco CL', 'App_Movil', 'usuario50', '192.168.0.50', 'Exitoso', 0, 'Último pago programado del mes');
 
+-- TABLA DE AUDITORIA DE OPERACIONES
+INSERT INTO auditoria_operaciones 
+(tabla_afectada, operacion, registro_id, datos_anteriores, datos_nuevos, usuario, fecha_operacion, ip_usuario, descripcion) 
+VALUES
+-- 1
+('Niveles_Descuento', 'INSERT', 25, NULL, '{"nuevo": "valor0"}', 'evento_mes', '2024-07-26 00:00:00', '192.168.1.200', 'Se insertó un nuevo registro.'),
+-- 2
+('Tarjetas', 'INSERT', 7, NULL, '{"nuevo": "valor1"}', 'admin', '2024-06-11 00:00:00', '192.168.1.112', 'Se insertó un nuevo registro.'),
+-- 3
+('Clientes', 'INSERT', 78, NULL, '{"nuevo": "valor2"}', 'evento_mes', '2024-07-27 00:00:00', '192.168.1.76', 'Se insertó un nuevo registro.'),
+-- 4
+('Tipos_Tarjeta', 'UPDATE', 21, '{"campo": "valor_antiguo_3"}', '{"campo": "valor_nuevo_3"}', 'evento_mes', '2024-07-26 00:00:00', '192.168.1.132', 'Se actualizó información del registro.'),
+-- 5
+('Cuotas_Manejo', 'UPDATE', 30, '{"campo": "valor_antiguo_4"}', '{"campo": "valor_nuevo_4"}', 'evento_mes', '2024-07-25 00:00:00', '192.168.1.223', 'Se actualizó información del registro.'),
+-- 6
+('Niveles_Descuento', 'INSERT', 65, NULL, '{"nuevo": "valor5"}', 'auditor', '2024-07-12 00:00:00', '192.168.1.93', 'Se insertó un nuevo registro.'),
+-- 7
+('Cuotas_Manejo', 'UPDATE', 94, '{"campo": "valor_antiguo_6"}', '{"campo": "valor_nuevo_6"}', 'evento_mes', '2024-06-23 00:00:00', '192.168.1.243', 'Se actualizó información del registro.'),
+-- 8
+('Historial_Pagos', 'DELETE', 25, '{"registro": "borrado_7"}', NULL, 'admin', '2024-07-29 00:00:00', '192.168.1.235', 'Se eliminó un registro de la tabla.'),
+-- 9
+('Cuotas_Manejo', 'DELETE', 96, '{"registro": "borrado_8"}', NULL, 'auditor', '2024-06-16 00:00:00', '192.168.1.129', 'Se eliminó un registro de la tabla.'),
+-- 10
+('Niveles_Descuento', 'DELETE', 39, '{"registro": "borrado_9"}', NULL, 'evento_mes', '2024-06-02 00:00:00', '192.168.1.218', 'Se eliminó un registro de la tabla.'),
+-- 11
+('Tipos_Tarjeta', 'INSERT', 26, NULL, '{"nuevo": "valor10"}', 'auditor', '2024-07-27 00:00:00', '192.168.1.158', 'Se insertó un nuevo registro.'),
+-- 12
+('Historial_Pagos', 'DELETE', 15, '{"registro": "borrado_11"}', NULL, 'operador_pagos', '2024-07-05 00:00:00', '192.168.1.148', 'Se eliminó un registro de la tabla.'),
+-- 13
+('Cuotas_Manejo', 'INSERT', 75, NULL, '{"nuevo": "valor12"}', 'admin', '2024-07-15 00:00:00', '192.168.1.240', 'Se insertó un nuevo registro.'),
+-- 14
+('Clientes', 'UPDATE', 66, '{"campo": "valor_antiguo_13"}', '{"campo": "valor_nuevo_13"}', 'operador_pagos', '2024-06-08 00:00:00', '192.168.1.162', 'Se actualizó información del registro.'),
+-- 15
+('Historial_Pagos', 'UPDATE', 68, '{"campo": "valor_antiguo_14"}', '{"campo": "valor_nuevo_14"}', 'evento_mes', '2024-07-28 00:00:00', '192.168.1.236', 'Se actualizó información del registro.');
+
+
 -- roles de usuarios
 -- admin
 CREATE USER 'admin'@'localhost' IDENTIFIED BY 'admin123';
@@ -247,30 +283,31 @@ GRANT ALL PRIVILEGES ON banco_cl.* TO 'admin'@'localhost';
 
 -- operador de pagos
 CREATE USER 'operador_pagos'@'localhost' IDENTIFIED BY 'pago456';
-GRANT SELECT, INSERT, UPDATE ON banco_cl.historial_pagos TO 'operador_pagos'@'localhost';
-GRANT SELECT, INSERT, UPDATE ON banco_cl.cuotas_manejo TO 'operador_pagos'@'localhost';
+GRANT SELECT, INSERT, UPDATE ON BancoCL.historial_pagos TO 'operador_pagos'@'localhost';
+GRANT SELECT, INSERT, UPDATE ON BancoCL.cuotas_manejo TO 'operador_pagos'@'localhost';
 
 -- gerente
 CREATE USER 'gerente'@'localhost' IDENTIFIED BY 'gerente789';
-GRANT SELECT ON banco_cl.cuotas_manejo TO 'gerente'@'localhost';
-GRANT SELECT ON banco_cl.historial_pagos TO 'gerente'@'localhost';
-GRANT SELECT ON banco_cl.tarjetas TO 'gerente'@'localhost';
-GRANT SELECT ON banco_cl.clientes TO 'gerente'@'localhost';
-GRANT SELECT ON banco_cl.tipos_tarjeta TO 'gerente'@'localhost';
-GRANT SELECT ON banco_cl.niveles_descuento TO 'gerente'@'localhost';
+GRANT SELECT ON BancoCL.cuotas_manejo TO 'gerente'@'localhost';
+GRANT SELECT ON BancoCL.historial_pagos TO 'gerente'@'localhost';
+GRANT SELECT ON BancoCL.tarjetas TO 'gerente'@'localhost';
+GRANT SELECT ON BancoCL.clientes TO 'gerente'@'localhost';
+GRANT SELECT ON BancoCL.tipos_tarjeta TO 'gerente'@'localhost';
+GRANT SELECT ON BancoCL.niveles_descuento TO 'gerente'@'localhost';
 
 -- consultor de tarjetas
 CREATE USER 'consultor_tarjetas'@'localhost' IDENTIFIED BY 'consulta101';
-GRANT SELECT ON banco_cl.tarjetas TO 'consultor_tarjetas'@'localhost';
-GRANT SELECT ON banco_cl.cuotas_manejo TO 'consultor_tarjetas'@'localhost';
-GRANT SELECT ON banco_cl.tipos_tarjeta TO 'consultor_tarjetas'@'localhost';
-GRANT SELECT ON banco_cl.niveles_descuento TO 'consultor_tarjetas'@'localhost';
+GRANT SELECT ON BancoCL.tarjetas TO 'consultor_tarjetas'@'localhost';
+GRANT SELECT ON BancoCL.cuotas_manejo TO 'consultor_tarjetas'@'localhost';
+GRANT SELECT ON BancoCL.tipos_tarjeta TO 'consultor_tarjetas'@'localhost';
+GRANT SELECT ON BancoCL.niveles_descuento TO 'consultor_tarjetas'@'localhost';
 
 -- auditor
 CREATE USER 'auditor'@'localhost' IDENTIFIED BY 'auditor202';
-GRANT SELECT ON banco_cl.* TO 'auditor'@'localhost';
+GRANT SELECT ON BancoCL.* TO 'auditor'@'localhost';
 
 
+-- IGNORAR ESTO
 -- Inserccion de datos
 -- 1. Tipos de tarjeta
 INSERT INTO Tipos_Tarjeta (codigo_tipo, nombre_tipo, descripcion, edad_minima, edad_maxima, ingresos_minimos, monto_minimo_apertura, monto_maximo_apertura, cuota_base_mensual, tasa_interes, beneficios) VALUES
