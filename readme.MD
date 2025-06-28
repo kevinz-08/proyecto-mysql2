@@ -68,37 +68,63 @@ PROYECTO-MYSQL2/
 - Crea las tablas necesarias y define claves primarias y foráneas.
 
 ### 📥 `data/dml.sql`
-- Inserta registros de ejemplo: tipos de tarjeta, niveles de descuento, clientes, etc.
+- Inserta registros de ejemplo: tipos de tarjeta, niveles de descuento, clientes, tarjetas, cuotas y pagos.
 
 ### 📊 `data/diagrama.png`
-- Representación visual del modelo de datos (entidades y relaciones).
+- Representación visual del modelo entidad-relación del sistema.
 
 ### 🧠 `dql_funciones.sql`
-- Funciones personalizadas para:
-  - Calcular descuentos.
-  - Evaluar montos y condiciones.
+Contiene **funciones definidas por el usuario** que encapsulan lógica de negocio y cálculos específicos, como:
+- Obtener el valor final de una cuota con descuento aplicado.
+- Calcular el porcentaje descontado según el nivel del cliente.
+- Determinar si una cuota está vencida.
+
+Estas funciones facilitan la reutilización y simplifican los procedimientos y triggers.
+
+---
 
 ### 🔁 `dql_procedimientos.sql`
-- Procedimientos para:
-  - Registrar nuevas cuotas automáticamente.
-  - Procesar pagos.
-  - Generar reportes financieros.
+Incluye **procedimientos almacenados** para automatizar tareas recurrentes del sistema, tales como:
+- Registrar nuevas cuotas de manejo con descuentos dinámicos.
+- Procesar pagos de cuotas y actualizar automáticamente el historial.
+- Generar reportes mensuales de ingresos, pagos realizados y proyecciones.
+- Registrar nuevos clientes y vincular tarjetas activas.
+- Aplicar ajustes de valor base o de nivel de descuento según condiciones específicas.
+
+Todos los procedimientos han sido validados con datos reales.
+
+---
 
 ### ⚠️ `dql_triggers.sql`
-- Triggers reactivos para:
-  - Registrar pagos automáticamente en el historial.
-  - Establecer fechas de vencimiento.
-  - Validar cambios importantes.
+Contiene **triggers (disparadores)** que reaccionan automáticamente a cambios en las tablas clave, asegurando la integridad de los datos. Incluye:
+- Creación automática de la fecha de vencimiento al insertar una cuota.
+- Registro en el historial de pagos cuando se realiza un pago válido.
+- Prevención de inserciones o modificaciones erróneas en cuotas vencidas.
+- Lógica para actualizar el estado de pagos y notificaciones internas.
+
+Estos triggers garantizan reglas de negocio en tiempo real, sin intervención manual.
+
+---
 
 ### ⏰ `dql_eventos.sql`
-- Automatización mediante eventos programados (cron jobs internos de MySQL).
+Contiene **eventos programados** usando `EVENT` de MySQL para ejecutar tareas automáticas según el tiempo. Ejemplos:
+- Verificar diariamente cuotas vencidas y marcar alertas.
+- Aplicar recargos a pagos vencidos si supera un número de días.
+- Revisión mensual de niveles de descuento para actualizar condiciones.
+
+Cada evento está programado con intervalos simulados para facilitar pruebas.
+
+---
 
 ### 📑 `dql_select.sql`
-- Consultas para:
-  - Listar cuotas vencidas.
-  - Calcular ingresos proyectados.
-  - Medir descuentos aplicados.
-  - Detectar inactividad de clientes.
+Incluye más de **30 consultas SQL** enfocadas en análisis, monitoreo y reportes de negocio. Algunas de las más destacadas:
+- Cuotas pendientes con más de 5 días de vencimiento.
+- Total de dinero descontado en el año actual.
+- Clientes con mayor número de pagos realizados.
+- Promedio de ingresos por tipo de tarjeta.
+- Proyección de ingresos futuros según cuotas registradas.
+
+Las consultas cubren tanto reportes operativos como análisis financiero.
 
 ---
 
